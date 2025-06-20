@@ -8,14 +8,14 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata = {
   title: "EmailFlow - Smart Email Management",
   description: "Manage multiple Gmail accounts with AI-powered categorization and todo management",
-    generator: 'v0.dev'
+  generator: 'v0.dev'
 }
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className="dark" suppressHydrationWarning>
       <body className={inter.className}>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+        <ThemeProvider attribute="class" defaultTheme="dark" forcedTheme="dark" disableTransitionOnChange>
           <SidebarProvider>{children}</SidebarProvider>
         </ThemeProvider>
       </body>

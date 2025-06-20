@@ -2,15 +2,17 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { Eye, EyeOff, Sparkles, Mail } from "lucide-react"
+import { Eye, EyeOff, Sparkles, Mail, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Checkbox } from "@/components/ui/checkbox"
+import { useRouter } from "next/navigation"
 
 export default function LoginPage() {
+  const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
   const [formData, setFormData] = useState({
     email: "",
@@ -18,24 +20,63 @@ export default function LoginPage() {
     rememberMe: false,
   })
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("")
+
+  const handleChange = (e) => {
+    const { name, value } = e.target
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }))
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    alert("submit")
     setIsLoading(true)
+    setError("")
 
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      // Replace with your actual API endpoint
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Login failed')
+      }
+
+      // Handle successful login
+      alert(JSON.stringify(data)) // {message: login successful}
+
+      // Redirect to home page (you'll need to implement routing)
+      router.push("/dashboard")
+      console.log("Login successful, redirecting to home...")
+
+    } catch (error) {
+      setError(error.message || 'An error occurred during login')
+      console.error('Login error:', error)
+    } finally {
       setIsLoading(false)
-      console.log("Login data:", formData)
-    }, 2000)
+    }
   }
 
   const handleGoogleLogin = () => {
     console.log("Continue with Google")
+    // Implement Google OAuth logic here
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-4 w-screen">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex items-center justify-center gap-2 mb-4">
@@ -49,6 +90,19 @@ export default function LoginPage() {
         </CardHeader>
 
         <CardContent className="space-y-4">
+          {error && (
+            <div className="rounded-md bg-red-50 p-4 border border-red-200">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <AlertCircle className="h-5 w-5 text-red-400" />
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm text-red-800">{error}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
           <Button variant="outline" className="w-full" onClick={handleGoogleLogin} disabled={isLoading}>
             <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24">
               <path
@@ -80,18 +134,19 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   id="email"
+                  name="email"
                   type="email"
                   placeholder="john@example.com"
                   className="pl-10"
                   value={formData.email}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
+                  onChange={handleChange}
                   required
                 />
               </div>
@@ -107,10 +162,11 @@ export default function LoginPage() {
               <div className="relative">
                 <Input
                   id="password"
+                  name="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="Enter your password"
                   value={formData.password}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, password: e.target.value }))}
+                  onChange={handleChange}
                   required
                 />
                 <Button
@@ -141,13 +197,24 @@ export default function LoginPage() {
             </div>
 
             <Button
+              onClick={handleSubmit}
               type="submit"
               className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
               disabled={isLoading}
             >
-              {isLoading ? "Signing in..." : "Sign in"}
+              {isLoading ? (
+                <div className="flex items-center">
+                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Signing in...
+                </div>
+              ) : (
+                "Sign in"
+              )}
             </Button>
-          </form>
+          </div>
 
           <div className="text-center text-sm">
             Don't have an account?{" "}

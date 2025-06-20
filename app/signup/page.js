@@ -2,15 +2,17 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { Eye, EyeOff, Sparkles, Mail } from "lucide-react"
+import { Eye, EyeOff, Sparkles, Mail, AlertCircle, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Checkbox } from "@/components/ui/checkbox"
+import { useRouter } from "next/navigation"
 
 export default function SignupPage() {
+  const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [formData, setFormData] = useState({
@@ -22,24 +24,75 @@ export default function SignupPage() {
     agreeToTerms: false,
   })
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("")
+
+  const handleChange = (e) => {
+    const { name, value } = e.target
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }))
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setIsLoading(true)
+    setError("")
 
-    // Simulate API call
-    setTimeout(() => {
+    // Client-side validation
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match")
       setIsLoading(false)
-      console.log("Signup data:", formData)
-    }, 2000)
+      return
+    }
+
+    if (!formData.agreeToTerms) {
+      setError("Please agree to the Terms of Service and Privacy Policy")
+      setIsLoading(false)
+      return
+    }
+
+    try {
+      // Prepare data for API (combining first and last name)
+      const registrationData = {
+        name: `${formData.firstName.trim()} ${formData.lastName.trim()}`,
+        email: formData.email,
+        password: formData.password
+      }
+
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(registrationData),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        // Registration successful - redirect to login
+        alert("Account created successfully! Please sign in.")
+        // router.push('/login') // Uncomment when using Next.js router
+        console.log("Registration successful, redirecting to login...")
+      } else {
+        setError(data.message || 'Something went wrong during registration')
+      }
+    } catch (error) {
+      setError('Network error. Please try again.')
+      console.error('Registration error:', error)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const handleGoogleSignup = () => {
     console.log("Continue with Google")
+    // Implement Google OAuth logic here
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-4 w-screen">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex items-center justify-center gap-2 mb-4">
@@ -53,6 +106,19 @@ export default function SignupPage() {
         </CardHeader>
 
         <CardContent className="space-y-4">
+          {error && (
+            <div className="rounded-md bg-red-50 p-4 border border-red-200">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <AlertCircle className="h-5 w-5 text-red-400" />
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm text-red-800">{error}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
           <Button variant="outline" className="w-full" onClick={handleGoogleSignup} disabled={isLoading}>
             <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24">
               <path
@@ -84,25 +150,31 @@ export default function SignupPage() {
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="firstName">First name</Label>
-                <Input
-                  id="firstName"
-                  placeholder="John"
-                  value={formData.firstName}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, firstName: e.target.value }))}
-                  required
-                />
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    id="firstName"
+                    name="firstName"
+                    placeholder="John"
+                    className="pl-10"
+                    value={formData.firstName}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="lastName">Last name</Label>
                 <Input
                   id="lastName"
+                  name="lastName"
                   placeholder="Doe"
                   value={formData.lastName}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, lastName: e.target.value }))}
+                  onChange={handleChange}
                   required
                 />
               </div>
@@ -114,11 +186,12 @@ export default function SignupPage() {
                 <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   id="email"
+                  name="email"
                   type="email"
                   placeholder="john@example.com"
                   className="pl-10"
                   value={formData.email}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
+                  onChange={handleChange}
                   required
                 />
               </div>
@@ -129,10 +202,11 @@ export default function SignupPage() {
               <div className="relative">
                 <Input
                   id="password"
+                  name="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="Create a strong password"
                   value={formData.password}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, password: e.target.value }))}
+                  onChange={handleChange}
                   required
                 />
                 <Button
@@ -156,10 +230,11 @@ export default function SignupPage() {
               <div className="relative">
                 <Input
                   id="confirmPassword"
+                  name="confirmPassword"
                   type={showConfirmPassword ? "text" : "password"}
                   placeholder="Confirm your password"
                   value={formData.confirmPassword}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, confirmPassword: e.target.value }))}
+                  onChange={handleChange}
                   required
                 />
                 <Button
@@ -197,13 +272,23 @@ export default function SignupPage() {
             </div>
 
             <Button
-              type="submit"
+              onClick={handleSubmit}
               className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
               disabled={isLoading || !formData.agreeToTerms}
             >
-              {isLoading ? "Creating account..." : "Create account"}
+              {isLoading ? (
+                <div className="flex items-center">
+                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Creating account...
+                </div>
+              ) : (
+                "Create account"
+              )}
             </Button>
-          </form>
+          </div>
 
           <div className="text-center text-sm">
             Already have an account?{" "}

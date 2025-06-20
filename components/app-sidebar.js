@@ -25,7 +25,7 @@ const emailAccounts = [
     id: 1,
     email: "john.doe@gmail.com",
     name: "John Doe",
-    avatar: "/placeholder.svg?height=32&width=32",
+    avatar: "https://i.pravatar.cc/300",
     unread: 12,
     isActive: true,
   },
@@ -33,7 +33,7 @@ const emailAccounts = [
     id: 2,
     email: "work@company.com",
     name: "Work Account",
-    avatar: "/placeholder.svg?height=32&width=32",
+    avatar: "https://i.pravatar.cc/300",
     unread: 5,
     isActive: false,
   },
@@ -41,7 +41,7 @@ const emailAccounts = [
     id: 3,
     email: "personal@gmail.com",
     name: "Personal",
-    avatar: "/placeholder.svg?height=32&width=32",
+    avatar: "https://i.pravatar.cc/300",
     unread: 0,
     isActive: false,
   },
@@ -137,7 +137,7 @@ export function AppSidebar() {
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton>
+              <SidebarMenuButton className="hover:bg-red-100 hover:text-red-700 transition-colors">
                 <LogOut className="h-4 w-4" />
                 <span>Sign Out</span>
               </SidebarMenuButton>

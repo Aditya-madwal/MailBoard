@@ -11,7 +11,7 @@ const emails = [
   {
     id: 1,
     sender: "Sarah Wilson",
-    avatar: "/placeholder.svg?height=32&width=32",
+    avatar: "https://i.pravatar.cc/300",
     subject: "Q4 Marketing Campaign Review",
     preview: "Hi team, I've attached the latest campaign metrics for review...",
     time: "2024-01-15T14:30:00Z",
@@ -23,7 +23,7 @@ const emails = [
   {
     id: 2,
     sender: "Netflix",
-    avatar: "/placeholder.svg?height=32&width=32",
+    avatar: "https://i.pravatar.cc/300",
     subject: "New releases this week",
     preview: "Check out the latest movies and shows added to Netflix...",
     time: "2024-01-15T13:00:00Z",
@@ -35,7 +35,7 @@ const emails = [
   {
     id: 3,
     sender: "Bank of America",
-    avatar: "/placeholder.svg?height=32&width=32",
+    avatar: "https://i.pravatar.cc/300",
     subject: "Monthly Statement Available",
     preview: "Your monthly statement for December is now available...",
     time: "2024-01-15T09:15:00Z",
@@ -47,7 +47,7 @@ const emails = [
   {
     id: 4,
     sender: "GitHub",
-    avatar: "/placeholder.svg?height=32&width=32",
+    avatar: "https://i.pravatar.cc/300",
     subject: "Security alert: New sign-in",
     preview: "We detected a new sign-in to your account from Chrome...",
     time: "2024-01-14T16:45:00Z",
@@ -59,7 +59,7 @@ const emails = [
   {
     id: 5,
     sender: "Amazon",
-    avatar: "/placeholder.svg?height=32&width=32",
+    avatar: "https://i.pravatar.cc/300",
     subject: "Your order has been shipped",
     preview: "Great news! Your order #123-456789 has been shipped...",
     time: "2024-01-14T11:20:00Z",
