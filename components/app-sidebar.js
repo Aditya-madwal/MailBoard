@@ -25,7 +25,7 @@ const emailAccounts = [
     id: 1,
     email: "john.doe@gmail.com",
     name: "John Doe",
-    avatar: "https://i.pravatar.cc/300",
+    avatar: `https://api.dicebear.com/8.x/fun-emoji/svg?seed=${Math.random()}`,
     unread: 12,
     isActive: true,
   },
@@ -33,7 +33,8 @@ const emailAccounts = [
     id: 2,
     email: "work@company.com",
     name: "Work Account",
-    avatar: "https://i.pravatar.cc/300",
+    avatar: `https://api.dicebear.com/8.x/fun-emoji/svg?seed=${Math.random()}`
+    ,
     unread: 5,
     isActive: false,
   },
@@ -41,7 +42,8 @@ const emailAccounts = [
     id: 3,
     email: "personal@gmail.com",
     name: "Personal",
-    avatar: "https://i.pravatar.cc/300",
+    avatar: `https://api.dicebear.com/8.x/fun-emoji/svg?seed=${Math.random()}`
+    ,
     unread: 0,
     isActive: false,
   },
