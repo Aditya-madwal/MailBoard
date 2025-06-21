@@ -160,7 +160,7 @@ export function TodoKanban() {
                     .map((todo) => (
                       <Card
                         key={todo.id}
-                        className="cursor-pointer transition-all duration-200 hover:shadow-md relative"
+                        className="cursor-pointer transition-all duration-300 hover:shadow-md relative overflow-hidden"
                         onMouseEnter={() => setHoveredTodo(todo.id)}
                         onMouseLeave={() => setHoveredTodo(null)}
                       >
@@ -217,24 +217,29 @@ export function TodoKanban() {
                             </div>
                           </div>
 
-                          {/* Expanded details on hover */}
-                          {hoveredTodo === todo.id && (
-                            <div className="mt-4 top-full left-0 right-0 z-10 p-3 bg-popover border rounded-lg shadow-lg transition-all duration-200">
+                          {/* Expanded details with smooth transition */}
+                          <div
+                            className={`transition-all duration-400 ease-in-out overflow-hidden ${hoveredTodo === todo.id
+                              ? 'max-h-48 opacity-100 mt-4'
+                              : 'max-h-0 opacity-0 mt-0'
+                              }`}
+                          >
+                            <div className="p-3 bg-popover border rounded-lg shadow-lg">
                               <div className="space-y-2 text-xs">
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-2 transform transition-transform duration-300">
                                   <User className="h-3 w-3" />
                                   <span>Assigned to: {todo.assignee}</span>
                                 </div>
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-2 transform transition-transform duration-300 delay-75">
                                   <Clock className="h-3 w-3" />
                                   <span>Created: {formatDateTime(todo.createdAt)}</span>
                                 </div>
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-2 transform transition-transform duration-300 delay-100">
                                   <Calendar className="h-3 w-3" />
                                   <span>Due: {formatDateTime(todo.dueDate)}</span>
                                 </div>
                                 {todo.links.length > 0 && (
-                                  <div className="space-y-1">
+                                  <div className="space-y-1 transform transition-transform duration-300 delay-150">
                                     <div className="flex items-center gap-2">
                                       <Link className="h-3 w-3" />
                                       <span>Links:</span>
@@ -254,7 +259,7 @@ export function TodoKanban() {
                                 )}
                               </div>
                             </div>
-                          )}
+                          </div>
                         </CardContent>
                       </Card>
                     ))}

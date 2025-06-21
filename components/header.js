@@ -38,7 +38,7 @@ export function Header() {
           </Button>
 
           <Avatar className="h-8 w-8">
-            <AvatarImage src="/placeholder.svg?height=32&width=32" />
+            <AvatarImage src={`https://api.dicebear.com/8.x/fun-emoji/svg?seed=${Math.random()}`} />
             <AvatarFallback>JD</AvatarFallback>
           </Avatar>
         </div>

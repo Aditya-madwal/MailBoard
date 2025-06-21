@@ -62,7 +62,9 @@ export function AppSidebar() {
 
   return (
     <>
-      <Sidebar className="border-r">
+      {/* <Sidebar className="border-r" style={{ backgroundColor: "black" }}> */}
+      <Sidebar className="bg-black z-70 border-r">
+
         <SidebarHeader className="p-4">
           <div className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-purple-600">
