@@ -49,6 +49,7 @@ export function ConnectEmailDialog({ open, onOpenChange }) {
     setTimeout(() => {
       setStep("success")
     }, 2000)
+
   }
 
   const handleClose = () => {
@@ -72,7 +73,10 @@ export function ConnectEmailDialog({ open, onOpenChange }) {
                 <Card
                   key={provider.id}
                   className="cursor-pointer transition-colors hover:bg-accent"
-                  onClick={() => handleConnect(provider.id)}
+                  // onClick={() => handleConnect(provider.id)}
+                  onClick={() => {
+                    window.location.href = `/api/auth/google/`
+                  }}
                 >
                   <CardHeader className="pb-2">
                     <div className="flex items-center justify-between">
@@ -83,9 +87,6 @@ export function ConnectEmailDialog({ open, onOpenChange }) {
                           <CardDescription className="text-xs">{provider.description}</CardDescription>
                         </div>
                       </div>
-                      {provider.popular && (
-                        <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">Popular</span>
-                      )}
                     </div>
                   </CardHeader>
                 </Card>

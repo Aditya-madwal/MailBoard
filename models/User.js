@@ -17,7 +17,16 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Password is required'],
     minlength: 6
+  },
+
+  // === Gmail Integration Fields ===
+  gmail: {
+    email: { type: String },
+    accessToken: { type: String },
+    refreshToken: { type: String },
+    tokenExpiryDate: { type: Date },
   }
+
 }, {
   timestamps: true
 })
