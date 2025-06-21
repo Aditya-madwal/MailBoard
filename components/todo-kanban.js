@@ -10,10 +10,10 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { AddTaskDialog } from "@/components/add-task-dialog"
 
 const columns = [
-  { id: "todo", title: "To Do", color: "border-t-gray-500" },
-  { id: "progress", title: "In Progress", color: "border-t-blue-500" },
-  { id: "review", title: "Review", color: "border-t-yellow-500" },
-  { id: "done", title: "Done", color: "border-t-green-500" },
+  { id: "todo", title: "To Do", color: "border-gray-500" },
+  { id: "progress", title: "In Progress", color: "border-blue-500" },
+  { id: "review", title: "Review", color: "border-yellow-500" },
+  { id: "done", title: "Done", color: "border-green-500" },
 ]
 
 const todos = [
@@ -72,6 +72,34 @@ const todos = [
     emailSource: false,
     links: ["https://github.com/company/dev-setup"],
     createdAt: "2024-01-05T16:45:00Z",
+  },
+  {
+    id: 5,
+    title: "Review Q4 Marketing Campaign",
+    description: "Analyze campaign metrics and prepare feedback",
+    status: "todo",
+    priority: "high",
+    dueDate: "2024-01-15",
+    assignee: "Sarah Wilson",
+    avatar: "/placeholder.svg?height=24&width=24",
+    tags: ["Marketing", "Review"],
+    emailSource: true,
+    links: ["https://analytics.google.com/campaign-123"],
+    createdAt: "2024-01-10T10:30:00Z",
+  },
+  {
+    id: 6,
+    title: "Review Q4 Marketing Campaign",
+    description: "Analyze campaign metrics and prepare feedback",
+    status: "todo",
+    priority: "high",
+    dueDate: "2024-01-15",
+    assignee: "Sarah Wilson",
+    avatar: "/placeholder.svg?height=24&width=24",
+    tags: ["Marketing", "Review"],
+    emailSource: true,
+    links: ["https://analytics.google.com/campaign-123"],
+    createdAt: "2024-01-10T10:30:00Z",
   },
 ]
 
@@ -132,7 +160,7 @@ export function TodoKanban() {
                     .map((todo) => (
                       <Card
                         key={todo.id}
-                        className="cursor-pointer transition-all hover:shadow-md relative"
+                        className="cursor-pointer transition-all duration-200 hover:shadow-md relative"
                         onMouseEnter={() => setHoveredTodo(todo.id)}
                         onMouseLeave={() => setHoveredTodo(null)}
                       >
@@ -191,7 +219,7 @@ export function TodoKanban() {
 
                           {/* Expanded details on hover */}
                           {hoveredTodo === todo.id && (
-                            <div className="absolute top-full left-0 right-0 z-10 mt-1 p-3 bg-popover border rounded-lg shadow-lg">
+                            <div className="mt-4 top-full left-0 right-0 z-10 p-3 bg-popover border rounded-lg shadow-lg transition-all duration-200">
                               <div className="space-y-2 text-xs">
                                 <div className="flex items-center gap-2">
                                   <User className="h-3 w-3" />

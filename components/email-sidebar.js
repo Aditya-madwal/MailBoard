@@ -127,8 +127,7 @@ export function EmailSidebar() {
             {emails.map((email) => (
               <div
                 key={email.id}
-                className={`p-3 rounded-lg cursor-pointer transition-colors hover:bg-accent/50 ${selectedEmail === email.id ? "bg-accent" : ""
-                  } ${email.unread ? "border-l-2 border-l-blue-500" : ""}`}
+                className={`p-3 rounded-lg cursor-pointer transition-colors hover:bg-accent/50 ${email.unread ? "border-2 border-blue-500" : ""} mb-1`}
                 onClick={() => handleEmailClick(email)}
               >
                 <div className="flex items-start gap-3">
