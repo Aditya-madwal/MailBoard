@@ -31,8 +31,8 @@ export async function GET(request, contextPromise) {
         oauth2Client.setCredentials({ access_token: gmailAccount.accessToken })
 
         const gmail = google.gmail({ version: 'v1', auth: oauth2Client })
+        const oauth2 = google.oauth2({ version: 'v2', auth: oauth2Client })
 
-        // Fetch inbox messages (limit to 10-20 for performance)
         const inboxRes = await gmail.users.messages.list({
             userId: 'me',
             labelIds: ['INBOX'],
@@ -50,28 +50,59 @@ export async function GET(request, contextPromise) {
                 })
 
                 const payload = detail.data.payload
-                const headers = payload.headers
+                const headers = payload.headers || []
 
                 const getHeader = (name) =>
                     headers.find((h) => h.name.toLowerCase() === name.toLowerCase())?.value
 
+                const from = getHeader('From') || ''
+                const senderEmail = extractEmail(from)
+
+                let senderPicture = null
+                try {
+                    const senderProfile = await oauth2.userinfo.get({ alt: 'json' })
+                    if (senderProfile?.data?.email === senderEmail) {
+                        senderPicture = senderProfile?.data?.picture || null
+                    }
+                } catch (err) {
+                    console.warn('Could not fetch profile picture for:', senderEmail)
+                }
+
+                // Detect and collect attachments
+                const attachments = []
+                const parts = payload.parts || []
+                for (const part of parts) {
+                    if (part.filename && part.body?.attachmentId) {
+                        attachments.push({
+                            filename: part.filename,
+                            mimeType: part.mimeType,
+                            attachmentId: part.body.attachmentId,
+                        })
+                    }
+                }
+
                 const bodyPart =
-                    payload.parts?.find((p) => p.mimeType === 'text/plain') ||
-                    payload.parts?.find((p) => p.mimeType === 'text/html') ||
+                    parts.find((p) => p.mimeType === 'text/html') ||
+                    parts.find((p) => p.mimeType === 'text/plain') ||
                     payload
 
                 const encodedBody = bodyPart?.body?.data || ''
                 const body = Buffer.from(encodedBody, 'base64').toString('utf-8')
+
+                const isUnread = detail.data.labelIds?.includes('UNREAD');
 
                 return {
                     id: detail.data.id,
                     threadId: detail.data.threadId,
                     snippet: detail.data.snippet,
                     subject: getHeader('Subject') || '',
-                    from: getHeader('From') || '',
+                    from,
                     to: getHeader('To') || '',
                     date: getHeader('Date') || '',
                     body,
+                    attachments,
+                    senderPicture,
+                    isUnread, // ✅ Include read/unread status
                 }
             })
         )
@@ -81,4 +112,10 @@ export async function GET(request, contextPromise) {
         console.error('Inbox fetch error:', err)
         return NextResponse.json({ error: 'Failed to fetch inbox' }, { status: 500 })
     }
+}
+
+// Extract sender email from "Name <email@example.com>"
+function extractEmail(rawFrom) {
+    const match = rawFrom.match(/<(.*)>/)
+    return match ? match[1] : rawFrom
 }
