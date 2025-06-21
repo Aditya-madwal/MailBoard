@@ -4,26 +4,35 @@ const GmailAccountSchema = new mongoose.Schema({
     user: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-        required: true
+        required: true,
     },
     email: {
         type: String,
         required: true,
         lowercase: true,
-        trim: true
+        trim: true,
     },
     accessToken: {
         type: String,
-        required: true
+        required: true,
     },
     refreshToken: {
-        type: String
+        type: String,
     },
     tokenExpiryDate: {
-        type: Date
-    }
+        type: Date,
+    },
+    name: {
+        type: String,
+        trim: true,
+    },
+    picture: {
+        type: String,
+        trim: true,
+    },
 }, {
-    timestamps: true
+    timestamps: true,
 })
+
 
 export default mongoose.models.GmailAccount || mongoose.model('GmailAccount', GmailAccountSchema)

@@ -4,6 +4,7 @@ import User from '@/models/User'
 import GmailAccount from '@/models/GmailAccount'
 import { verifyToken } from '@/lib/jwt'
 import { NextResponse } from 'next/server'
+import { getGoogleUserProfile } from '@/services/mail/getGoogleUserProfile'
 
 export async function GET(request) {
     const url = new URL(request.url)
@@ -31,30 +32,47 @@ export async function GET(request) {
         const { tokens } = await oauth2Client.getToken(code)
         oauth2Client.setCredentials(tokens)
 
-        const gmail = google.gmail({ version: 'v1', auth: oauth2Client })
-        const profile = await gmail.users.getProfile({ userId: 'me' })
+        // const gmail = google.gmail({ version: 'v1', auth: oauth2Client })
+        // const profile = await gmail.users.getProfile({ userId: 'me' })
 
-        const email = profile.data.emailAddress
+        // const email = profile.data.emailAddress
+        const userInfo = await getGoogleUserProfile({ accessToken: tokens.access_token })
+
+        if (!userInfo) {
+            return NextResponse.json({ message: 'Failed to fetch user info' }, { status: 500 })
+        }
+
+        const { email, name, picture } = userInfo
+
         const userId = decoded.userId
 
         // Check if Gmail account already exists for this user + email
         let gmailAccount = await GmailAccount.findOne({ user: userId, email })
 
         if (!gmailAccount) {
-            // Create new Gmail account document
             gmailAccount = new GmailAccount({
                 user: userId,
                 email,
                 accessToken: tokens.access_token,
                 refreshToken: tokens.refresh_token,
-                tokenExpiryDate: tokens.expiry_date ? new Date(tokens.expiry_date) : null
+                tokenExpiryDate: tokens.expiry_date ? new Date(tokens.expiry_date) : null,
+                name,
+                picture,
             })
         } else {
-            // Update existing Gmail account
             gmailAccount.accessToken = tokens.access_token
             gmailAccount.refreshToken = tokens.refresh_token
             gmailAccount.tokenExpiryDate = tokens.expiry_date ? new Date(tokens.expiry_date) : null
+            gmailAccount.name = name
+            gmailAccount.picture = picture
         }
+
+        console.log({
+            name, picture, email, accessToken: tokens.access_token, refreshToken: tokens.refresh_token, tokenExpiryDate: tokens.expiry_date
+        })
+
+        console.log(gmailAccount)
+
 
         await gmailAccount.save()
 
@@ -65,12 +83,6 @@ export async function GET(request) {
             await user.save()
         }
 
-        // return NextResponse.json({
-        //     message: 'Gmail account linked successfully',
-        //     user: user,
-        //     gmail: gmailAccount,
-        //     primary: user.primaryGmailAccount.equals(gmailAccount._id)
-        // })
         return NextResponse.redirect(`${process.env.NEXT_PUBLIC_BASE_URL}/dashboard`)
     } catch (error) {
         console.error('OAuth callback error:', error)
