@@ -16,22 +16,20 @@ export async function GET(request) {
     const scopes = [
         'https://www.googleapis.com/auth/userinfo.profile',
         'https://www.googleapis.com/auth/userinfo.email',
-        'https://www.googleapis.com/auth/gmail.readonly',
+        'https://www.googleapis.com/auth/gmail.modify',         // ✅ for reading + modifying Gmail (read/write)
         'https://www.googleapis.com/auth/gmail.send',
-        'https://www.googleapis.com/auth/contacts.readonly', // optional
-        'https://www.googleapis.com/auth/contacts', // optional
-        'https://www.googleapis.com/auth/contacts.other.readonly', // optional
-        'https://www.googleapis.com/auth/directory.readonly', // optional
-        'https://www.googleapis.com/auth/profile.agerange.read', // optional
-        'https://www.googleapis.com/auth/profile.language.read', // optional
-        'https://www.googleapis.com/auth/user.emails.read', // 👈 safe bet
-        'https://www.googleapis.com/auth/userinfo.profile',
-        'https://www.googleapis.com/auth/userinfo.email',
-        'https://www.googleapis.com/auth/plus.login', // for legacy fallback
-        'https://www.googleapis.com/auth/plus.me',    // for legacy fallback
-        'https://www.googleapis.com/auth/plus.profile.emails.read' // for legacy fallback
-
+        'https://www.googleapis.com/auth/contacts.readonly',
+        'https://www.googleapis.com/auth/contacts',
+        'https://www.googleapis.com/auth/contacts.other.readonly',
+        'https://www.googleapis.com/auth/directory.readonly',
+        'https://www.googleapis.com/auth/profile.agerange.read',
+        'https://www.googleapis.com/auth/profile.language.read',
+        'https://www.googleapis.com/auth/user.emails.read',
+        'https://www.googleapis.com/auth/plus.login',
+        'https://www.googleapis.com/auth/plus.me',
+        'https://www.googleapis.com/auth/plus.profile.emails.read'
     ]
+
 
     const url = oauth2Client.generateAuthUrl({
         access_type: 'offline',

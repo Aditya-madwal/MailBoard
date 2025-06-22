@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Star, CheckSquare } from "lucide-react"
+import { Star, CheckSquare, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -92,6 +92,11 @@ export function EmailSidebar() {
     console.log("Creating todo from email:", email.subject)
   }
 
+  const refreshInbox = () => {
+    console.log("Refreshing inbox...")
+    // This would trigger a real inbox refresh in a real app
+  }
+
   const handleEmailClick = (email) => {
     setSelectedEmail(email.id)
     setSelectedEmailForDetail(email)
@@ -118,7 +123,18 @@ export function EmailSidebar() {
         <div className="p-4 border-b flex-shrink-0 bg-background">
           <div className="flex items-center justify-between">
             <h2 className="font-semibold">Inbox</h2>
-            <Badge variant="secondary">{emails.filter((e) => e.unread).length} unread</Badge>
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary">{emails.filter((e) => e.unread).length} unread</Badge>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={refreshInbox}
+                className="h-6 w-6 p-0 hover:bg-accent"
+                title="Refresh inbox"
+              >
+                <RefreshCw className="h-3 w-3" />
+              </Button>
+            </div>
           </div>
         </div>
 
