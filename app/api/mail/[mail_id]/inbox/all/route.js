@@ -29,7 +29,7 @@ export async function GET(request, { params }) {
         const inboxMails = await InboxMail.find({ gmailAccount: mail_id }).sort({ date: -1 })
         console.log(`total_emails = ${inboxMails.length}`)
 
-        return NextResponse.json({ inbox: inboxMails })
+        return NextResponse.json(inboxMails)
     } catch (err) {
         console.error('Local inbox fetch error:', err)
         return NextResponse.json({ error: 'Failed to fetch saved inbox mails' }, { status: 500 })

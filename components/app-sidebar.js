@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { ConnectEmailDialog } from "@/components/connect-email-dialog"
+import { CreateCategoryDialog } from "@/components/create-category-dialog"
 
 const emailAccounts = [
   {
@@ -57,8 +58,17 @@ const categories = [
   { name: "Shopping", color: "bg-pink-500", count: 6 },
 ]
 
+const labels = [
+  { name: "Primary", color: "bg-red-500", count: 45 },
+  { name: "Social", color: "bg-blue-500", count: 12 },
+  { name: "Promotions", color: "bg-green-500", count: 28 },
+  { name: "Updates", color: "bg-yellow-500", count: 7 },
+  { name: "Forums", color: "bg-purple-500", count: 3 },
+]
+
 export function AppSidebar() {
   const [connectDialogOpen, setConnectDialogOpen] = React.useState(false)
+  const [createCategoryDialogOpen, setCreateCategoryDialogOpen] = React.useState(false)
 
   return (
     <>
@@ -113,7 +123,17 @@ export function AppSidebar() {
           </SidebarGroup>
 
           <SidebarGroup>
-            <SidebarGroupLabel>Categories</SidebarGroupLabel>
+            <div className="flex items-center justify-between w-full">
+              <SidebarGroupLabel>Categories</SidebarGroupLabel>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setCreateCategoryDialogOpen(true)}
+                className="h-6 w-6 p-0"
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
             <SidebarGroupContent>
               <SidebarMenu>
                 {categories.map((category) => (
@@ -123,6 +143,24 @@ export function AppSidebar() {
                       <span>{category.name}</span>
                       <Badge variant="secondary" className="ml-auto">
                         {category.count}
+                      </Badge>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+          <SidebarGroup>
+            <SidebarGroupLabel>Labels</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {labels.map((label) => (
+                  <SidebarMenuItem key={label.name}>
+                    <SidebarMenuButton className="justify-start">
+                      <div className={`h-3 w-3 rounded-full ${label.color}`} />
+                      <span>{label.name}</span>
+                      <Badge variant="secondary" className="ml-auto">
+                        {label.count}
                       </Badge>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -152,6 +190,7 @@ export function AppSidebar() {
       </Sidebar>
 
       <ConnectEmailDialog open={connectDialogOpen} onOpenChange={setConnectDialogOpen} />
+      <CreateCategoryDialog open={createCategoryDialogOpen} onOpenChange={setCreateCategoryDialogOpen} />
     </>
   )
 }

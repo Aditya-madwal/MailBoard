@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { EmailDetailModal } from "@/components/email-detail-modal"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 
 const emails = [
   {
@@ -91,6 +92,10 @@ export function EmailSidebar() {
     // This would integrate with your todo system
     console.log("Creating todo from email:", email.subject)
   }
+  const changeEmailCategory = (emailId, newCategory) => {
+    console.log(`Changing email ${emailId} category to ${newCategory}`)
+    // This would update the email category in a real app
+  }
 
   const refreshInbox = () => {
     console.log("Refreshing inbox...")
@@ -143,7 +148,7 @@ export function EmailSidebar() {
             {emails.map((email) => (
               <div
                 key={email.id}
-                className={`p-3 rounded-lg cursor-pointer transition-colors hover:bg-accent/50 ${email.unread ? "border-2 border-blue-500" : ""} mb-1`}
+                className={`p-3 rounded-lg cursor-pointer transition-colors hover:bg-accent/50 ${email.unread ? " bg-[#000000] border-l-2 border-blue-400" : ""} mb-1`}
                 onClick={() => handleEmailClick(email)}
               >
                 <div className="flex items-start gap-3">
@@ -174,8 +179,29 @@ export function EmailSidebar() {
 
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <div className={`h-2 w-2 rounded-full ${categoryColors[email.category]}`} />
-                        <span className="text-xs text-muted-foreground">{email.category}</span>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <button className="flex items-center gap-2 hover:bg-accent/50 px-1 py-0.5 transition-colors border rounded-full">
+                              <div className={`h-2 w-2 rounded-full ${categoryColors[email.category]}`} />
+                              <span className="text-xs text-muted-foreground">{email.category}</span>
+                            </button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="start" className="w-32">
+                            {Object.keys(categoryColors).map((category) => (
+                              <DropdownMenuItem
+                                key={category}
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  changeEmailCategory(email.id, category)
+                                }}
+                                className="flex items-center gap-2"
+                              >
+                                <div className={`h-2 w-2 rounded-full ${categoryColors[category]}`} />
+                                <span className="text-xs">{category}</span>
+                              </DropdownMenuItem>
+                            ))}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                         {email.hasAttachment && (
                           <div className="h-3 w-3 rounded bg-muted flex items-center justify-center">
                             <div className="h-1.5 w-1.5 bg-muted-foreground rounded-sm" />
