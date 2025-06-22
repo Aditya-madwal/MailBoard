@@ -107,6 +107,7 @@ export async function GET(request, { params }) {
                         isUnread,
                         labelIds,
                         gmailCategory,
+                        user: authResult.user.userId
                     },
                     { upsert: true, new: true }
                 )
@@ -121,6 +122,7 @@ export async function GET(request, { params }) {
                     senderEmail,
                     senderPicture,
                     gmailCategory,
+                    user: authResult.user.userId
                 }
             })
         )

@@ -5,7 +5,7 @@ import mongoose from "mongoose";
 const inboxMailSchema = new mongoose.Schema(
     {
         gmailAccount: { type: mongoose.Schema.Types.ObjectId, ref: 'GmailAccount', required: true },
-
+        user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
         messageId: { type: String, required: true, unique: true },
         threadId: { type: String },
         snippet: { type: String },
@@ -40,7 +40,7 @@ const inboxMailSchema = new mongoose.Schema(
         },
 
         // ✅ One user-defined category per email
-        userCategory: {
+        UserCategory: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'UserCategory',
             default: null
