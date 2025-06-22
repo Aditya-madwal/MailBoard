@@ -1,35 +1,41 @@
-const mongoose = require("mongoose");
+// models/InboxMail.js
 
-const InboxMailSchema = new mongoose.Schema(
+import mongoose from "mongoose";
+
+const inboxMailSchema = new mongoose.Schema(
     {
-        user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-        gmailAccount: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "GmailAccount",
-            required: true,
-        },
+        gmailAccount: { type: mongoose.Schema.Types.ObjectId, ref: 'GmailAccount', required: true },
+
         messageId: { type: String, required: true, unique: true },
-        threadId: String,
-        subject: String,
-        from: String,
-        to: String,
-        date: Date,
-        snippet: String,
-        body: String,
+        threadId: { type: String },
+        snippet: { type: String },
+        subject: { type: String },
+        from: { type: String },
+        to: { type: String },
+
+        cc: [{ type: String }],     // ✅ now array
+        bcc: [{ type: String }],    // ✅ now array
+
+        date: { type: String },
+        senderName: { type: String },
+        senderEmail: { type: String },
+        senderPicture: { type: String, default: null },
+
+        body: { type: String, default: '' },
         attachments: [
             {
-                attachmentId: String,
                 filename: String,
                 mimeType: String,
+                attachmentId: String,
             },
         ],
-        isUnread: Boolean,
-        labels: [String],
-        category: String,
-        analyzed: { type: Boolean, default: false },
+
+        isUnread: { type: Boolean, default: true },
+        labelIds: [String],
     },
     { timestamps: true }
-);
+)
 
-module.exports =
-    mongoose.models.InboxMail || mongoose.model("InboxMail", InboxMailSchema);
+
+export default mongoose.models.InboxMail ||
+    mongoose.model("InboxMail", inboxMailSchema);

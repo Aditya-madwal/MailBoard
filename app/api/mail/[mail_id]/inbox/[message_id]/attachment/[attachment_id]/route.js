@@ -5,6 +5,7 @@ import dbConnect from '@/lib/db'
 import GmailAccount from '@/models/GmailAccount'
 import { validateAuth } from '@/lib/auth'
 import { NextResponse } from 'next/server'
+import { getValidOAuthClient } from '@/services/mail/getValidOAuthClient'
 
 export async function GET(request, { params }) {
     try {
@@ -24,13 +25,14 @@ export async function GET(request, { params }) {
             return NextResponse.json({ error: authResult.error }, { status: 401 })
         }
 
-        const gmailAccount = await GmailAccount.findById(mail_id)
+        // const gmailAccount = await GmailAccount.findById(mail_id)
+        const { oauth2Client, gmailAccount } = await getValidOAuthClient(mail_id)
         if (!gmailAccount || gmailAccount.user.toString() !== authResult.user.userId) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
         }
 
-        const oauth2Client = new google.auth.OAuth2()
-        oauth2Client.setCredentials({ access_token: gmailAccount.accessToken })
+        // const oauth2Client = new google.auth.OAuth2()
+        // oauth2Client.setCredentials({ access_token: gmailAccount.accessToken })
 
         const gmail = google.gmail({ version: 'v1', auth: oauth2Client })
 

@@ -1,15 +1,14 @@
 // app/api/mail/[mail_id]/send/route.js
 
-import { google } from 'googleapis'
 import dbConnect from '@/lib/db'
-import GmailAccount from '@/models/GmailAccount'
 import { validateAuth } from '@/lib/auth'
+import { getValidOAuthClient } from '@/services/mail/getValidOAuthClient'
+import { google } from 'googleapis'
 import { NextResponse } from 'next/server'
 
 export async function POST(request, { params }) {
     try {
         const { mail_id } = await params
-
         await dbConnect()
 
         const authResult = await validateAuth(request)
@@ -17,7 +16,8 @@ export async function POST(request, { params }) {
             return NextResponse.json({ error: authResult.error }, { status: 401 })
         }
 
-        const gmailAccount = await GmailAccount.findById(mail_id)
+        const { oauth2Client, gmailAccount } = await getValidOAuthClient(mail_id)
+
         if (!gmailAccount || gmailAccount.user.toString() !== authResult.user.userId) {
             return NextResponse.json({ error: 'Unauthorized or Gmail account not found' }, { status: 403 })
         }
@@ -28,7 +28,6 @@ export async function POST(request, { params }) {
         const bcc = formData.get('bcc') || ''
         const subject = formData.get('subject') || '(no subject)'
         const message = formData.get('message') || ''
-
         const attachments = formData.getAll('attachments') || []
 
         const boundary = '__MY_BOUNDARY__'
@@ -41,7 +40,7 @@ export async function POST(request, { params }) {
         rawMessage += `MIME-Version: 1.0\r\n`
         rawMessage += `Content-Type: multipart/mixed; boundary="${boundary}"\r\n\r\n`
 
-        // Plain text part
+        // Plain text
         rawMessage += `--${boundary}\r\n`
         rawMessage += `Content-Type: text/plain; charset="UTF-8"\r\n`
         rawMessage += `Content-Transfer-Encoding: 7bit\r\n\r\n`
@@ -49,15 +48,15 @@ export async function POST(request, { params }) {
 
         // Attachments
         for (const file of attachments) {
-            const fileBuffer = Buffer.from(await file.arrayBuffer())
-            const fileContent = fileBuffer.toString('base64')
+            const buffer = Buffer.from(await file.arrayBuffer())
+            const base64 = buffer.toString('base64')
             const filename = file.name
 
             rawMessage += `--${boundary}\r\n`
             rawMessage += `Content-Type: ${file.type}; name="${filename}"\r\n`
             rawMessage += `Content-Disposition: attachment; filename="${filename}"\r\n`
             rawMessage += `Content-Transfer-Encoding: base64\r\n\r\n`
-            rawMessage += `${fileContent}\r\n\r\n`
+            rawMessage += `${base64}\r\n\r\n`
         }
 
         rawMessage += `--${boundary}--`
@@ -68,16 +67,11 @@ export async function POST(request, { params }) {
             .replace(/\//g, '_')
             .replace(/=+$/, '')
 
-        const oauth2Client = new google.auth.OAuth2()
-        oauth2Client.setCredentials({ access_token: gmailAccount.accessToken })
-
         const gmail = google.gmail({ version: 'v1', auth: oauth2Client })
 
         await gmail.users.messages.send({
             userId: 'me',
-            requestBody: {
-                raw: encodedMessage
-            }
+            requestBody: { raw: encodedMessage }
         })
 
         return NextResponse.json({ message: 'Mail sent successfully' })
