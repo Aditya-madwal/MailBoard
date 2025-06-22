@@ -24,7 +24,6 @@ const todos = [
     status: "todo",
     priority: "high",
     dueDate: "2024-01-15",
-    assignee: "Sarah Wilson",
     avatar: "/placeholder.svg?height=24&width=24",
     tags: ["Marketing", "Review"],
     emailSource: true,
@@ -38,7 +37,6 @@ const todos = [
     status: "progress",
     priority: "medium",
     dueDate: "2024-01-20",
-    assignee: "John Doe",
     avatar: "/placeholder.svg?height=24&width=24",
     tags: ["Security", "Documentation"],
     emailSource: true,
@@ -52,7 +50,6 @@ const todos = [
     status: "review",
     priority: "low",
     dueDate: "2024-01-12",
-    assignee: "Finance Team",
     avatar: "/placeholder.svg?height=24&width=24",
     tags: ["Finance", "Monthly"],
     emailSource: true,
@@ -66,7 +63,6 @@ const todos = [
     status: "done",
     priority: "medium",
     dueDate: "2024-01-10",
-    assignee: "Dev Team",
     avatar: "/placeholder.svg?height=24&width=24",
     tags: ["Development", "Setup"],
     emailSource: false,
@@ -80,7 +76,6 @@ const todos = [
     status: "todo",
     priority: "high",
     dueDate: "2024-01-15",
-    assignee: "Sarah Wilson",
     avatar: "/placeholder.svg?height=24&width=24",
     tags: ["Marketing", "Review"],
     emailSource: true,
@@ -94,7 +89,6 @@ const todos = [
     status: "todo",
     priority: "high",
     dueDate: "2024-01-15",
-    assignee: "Sarah Wilson",
     avatar: "/placeholder.svg?height=24&width=24",
     tags: ["Marketing", "Review"],
     emailSource: true,
@@ -200,15 +194,6 @@ export function TodoKanban() {
 
                           <div className="flex items-center justify-between text-xs">
                             <div className="flex items-center gap-2">
-                              <Avatar className="h-5 w-5">
-                                <AvatarImage src={todo.avatar || "/placeholder.svg"} />
-                                <AvatarFallback className="text-xs">
-                                  {todo.assignee
-                                    .split(" ")
-                                    .map((n) => n[0])
-                                    .join("")}
-                                </AvatarFallback>
-                              </Avatar>
                               <Badge className={`text-xs ${priorityColors[todo.priority]}`}>{todo.priority}</Badge>
                             </div>
                             <div className="flex items-center gap-1 text-muted-foreground">
@@ -226,10 +211,7 @@ export function TodoKanban() {
                           >
                             <div className="p-3 bg-popover border rounded-lg shadow-lg">
                               <div className="space-y-2 text-xs">
-                                <div className="flex items-center gap-2 transform transition-transform duration-300">
-                                  <User className="h-3 w-3" />
-                                  <span>Assigned to: {todo.assignee}</span>
-                                </div>
+
                                 <div className="flex items-center gap-2 transform transition-transform duration-300 delay-75">
                                   <Clock className="h-3 w-3" />
                                   <span>Created: {formatDateTime(todo.createdAt)}</span>
