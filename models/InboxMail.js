@@ -31,6 +31,20 @@ const inboxMailSchema = new mongoose.Schema(
                 attachmentId: String,
             },
         ],
+        isCategorized: { type: Boolean, default: false },
+
+        gmailCategory: {
+            type: String,
+            enum: ['primary', 'social', 'promotions', 'updates', 'forums'],
+            default: 'primary'
+        },
+
+        // ✅ One user-defined category per email
+        userCategory: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'UserCategory',
+            default: null
+        },
 
         isUnread: { type: Boolean, default: true },
         labelIds: [String],

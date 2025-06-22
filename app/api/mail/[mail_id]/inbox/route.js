@@ -76,7 +76,20 @@ export async function GET(request, { params }) {
                 const dateStr = getHeader('Date') || ''
                 const parsedDate = new Date(dateStr)
 
-                // saving the mail partially in the inboxmail model
+                // Categorize Gmail category
+                const labelIds = detail.data.labelIds || []
+                let gmailCategory = 'primary' // Default fallback
+
+                if (labelIds.includes('CATEGORY_PROMOTIONS')) {
+                    gmailCategory = 'promotions'
+                } else if (labelIds.includes('CATEGORY_SOCIAL')) {
+                    gmailCategory = 'social'
+                } else if (labelIds.includes('CATEGORY_UPDATES')) {
+                    gmailCategory = 'updates'
+                } else if (labelIds.includes('CATEGORY_FORUMS')) {
+                    gmailCategory = 'forums'
+                }
+
                 await InboxMail.findOneAndUpdate(
                     { messageId: detail.data.id },
                     {
@@ -92,6 +105,8 @@ export async function GET(request, { params }) {
                         senderEmail,
                         senderPicture,
                         isUnread,
+                        labelIds,
+                        gmailCategory,
                     },
                     { upsert: true, new: true }
                 )
@@ -105,7 +120,40 @@ export async function GET(request, { params }) {
                     senderName,
                     senderEmail,
                     senderPicture,
+                    gmailCategory,
                 }
+
+
+                // saving the mail partially in the inboxmail model
+                // await InboxMail.findOneAndUpdate(
+                //     { messageId: detail.data.id },
+                //     {
+                //         gmailAccount: gmailAccount._id,
+                //         messageId: detail.data.id,
+                //         threadId: detail.data.threadId,
+                //         snippet: detail.data.snippet,
+                //         subject: getHeader('Subject') || '',
+                //         from,
+                //         to: getHeader('To') || '',
+                //         date: parsedDate,
+                //         senderName,
+                //         senderEmail,
+                //         senderPicture,
+                //         isUnread,
+                //     },
+                //     { upsert: true, new: true }
+                // )
+
+                // return {
+                //     id: detail.data.id,
+                //     snippet: detail.data.snippet,
+                //     subject: getHeader('Subject') || '',
+                //     date: getHeader('Date') || '',
+                //     isUnread,
+                //     senderName,
+                //     senderEmail,
+                //     senderPicture,
+                // }
             })
         )
 
