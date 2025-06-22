@@ -6,10 +6,10 @@ import GmailAccount from '@/models/GmailAccount'
 import { validateAuth } from '@/lib/auth'
 import { NextResponse } from 'next/server'
 
-export async function GET(request, contextPromise) {
+export async function GET(request, { params }) {
     try {
-        const context = await contextPromise
-        const { mail_id } = context.params
+        // Await params before accessing its properties
+        const { mail_id } = await params
 
         if (!mail_id) {
             return NextResponse.json({ error: 'Mail ID is required' }, { status: 400 })

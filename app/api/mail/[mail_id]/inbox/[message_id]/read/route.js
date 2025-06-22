@@ -6,10 +6,9 @@ import GmailAccount from '@/models/GmailAccount'
 import { validateAuth } from '@/lib/auth'
 import { NextResponse } from 'next/server'
 
-export async function PATCH(request, contextPromise) {
+export async function PATCH(request, { params }) {
     try {
-        const context = await contextPromise
-        const { mail_id, message_id } = context.params
+        const { mail_id, message_id } = await params
 
         await dbConnect()
 

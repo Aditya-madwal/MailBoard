@@ -6,10 +6,12 @@ import GmailAccount from '@/models/GmailAccount'
 import { validateAuth } from '@/lib/auth'
 import { NextResponse } from 'next/server'
 
-export async function GET(request, contextPromise) {
+export async function GET(request, { params }) {
     try {
-        const context = await contextPromise
-        const { mail_id, message_id, attachment_id } = context.params
+        const { mail_id, message_id, attachment_id } = await params
+
+        // const context = await contextPromise
+        // const { mail_id, message_id, attachment_id } = context.params
 
         if (!mail_id || !message_id || !attachment_id) {
             return NextResponse.json({ error: 'Missing params' }, { status: 400 })
