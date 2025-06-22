@@ -16,7 +16,9 @@ const inboxMailSchema = new mongoose.Schema(
         cc: [{ type: String }],     // ✅ now array
         bcc: [{ type: String }],    // ✅ now array
 
-        date: { type: String },
+        date: {
+            type: Date
+        },
         senderName: { type: String },
         senderEmail: { type: String },
         senderPicture: { type: String, default: null },

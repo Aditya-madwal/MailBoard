@@ -113,7 +113,6 @@ export async function GET(request, { params }) {
                 to,
                 cc: ccList,
                 bcc: bccList,
-                date,
                 senderName,
                 senderEmail,
                 senderPicture,
