@@ -2,6 +2,7 @@ import dbConnect from '@/lib/db'
 import { validateAuth } from '@/lib/auth'
 import InboxMail from '@/models/InboxMail'
 import { NextResponse } from 'next/server'
+import { UserCategory } from '@/models/UserCategory'
 
 export async function GET(request) {
     try {
@@ -14,8 +15,10 @@ export async function GET(request) {
 
         const userId = authResult.user.userId
 
+        await InboxMail.updateMany({ user: userId }, { UserCategory: null })
+
         const mails = await InboxMail.find({ user: userId })
-            .populate('UserCategory', 'name color')
+            .populate('UserCategory')
             .sort({ date: -1 })
             .lean()
 
