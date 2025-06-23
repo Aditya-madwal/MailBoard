@@ -6,12 +6,16 @@ import { EmailSidebar } from "@/components/email-sidebar"
 import { TodoKanban } from "@/components/todo-kanban"
 import { useSidebar } from "@/components/ui/sidebar"
 import { SidebarInset } from "@/components/ui/sidebar"
-import { useEffect } from "react"
+// import { useEffect } from "react"
 import axios from 'axios'
+import { useState, useEffect } from "react"
+import { CategoryOnboardingModal } from "@/components/category-onboarding-modal"
 // make changes here to avoid negative space from sidebar
 
 export default function Dashboard() {
     const { open, state } = useSidebar()
+    const [showOnboarding, setShowOnboarding] = useState(false)
+    const [userCategories, setUserCategories] = useState([])
 
     // const getinboxall = async () => {
     //     try {
@@ -33,12 +37,26 @@ export default function Dashboard() {
 
     // Alert whenever sidebar toggles
     useEffect(() => {
-        // alert(`Sidebar is now: ${open ? "OPEN" : "CLOSED"} (State: ${state})`)
-    }, [open, state])
+        // Check if user has categories set up
+        const savedCategories = localStorage.getItem("userCategories")
+        if (savedCategories) {
+            setUserCategories(JSON.parse(savedCategories))
+        } else {
+            // Show onboarding modal if no categories exist
+            setShowOnboarding(true)
+        }
+    }, [])
+
+    const handleOnboardingComplete = (categories) => {
+        setUserCategories(categories)
+        localStorage.setItem("userCategories", JSON.stringify(categories))
+        setShowOnboarding(false)
+    }
 
     return (
         <>
-            <AppSidebar />
+            {/* <AppSidebar /> */}
+            <AppSidebar userCategories={userCategories} />
             <SidebarInset className="flex flex-col h-screen overflow-hidden">
                 {/* <div
                     className="fixed top-0 right-0 z-50 bg-background border-b group-data-[collapsible=offcanvas]:left-0 transition-all duration-200"
@@ -84,13 +102,19 @@ export default function Dashboard() {
   "
                         style={open ? { '--sidebar-width': '16rem' } : { '--sidebar-width': '0px' }}
                     >
-                        <EmailSidebar />
+                        {/* <EmailSidebar /> */}
+                        <EmailSidebar userCategories={userCategories} />
                     </div>
                     <main className="flex-1 overflow-hidden" style={{ marginLeft: "320px" }}>
                         <TodoKanban />
                     </main>
                 </div>
             </SidebarInset>
+            <CategoryOnboardingModal
+                open={showOnboarding}
+                onOpenChange={setShowOnboarding}
+                onComplete={handleOnboardingComplete}
+            />
         </>
     )
 }
