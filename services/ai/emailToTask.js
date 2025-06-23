@@ -13,7 +13,7 @@ const taskResponseSchema = {
         },
         description: {
             type: "STRING",
-            description: "Detailed description of what needs to be done"
+            description: "Detailed description of what needs to be done. Keep it concise, maximum 30 words."
         },
         dueDate: {
             type: "STRING",
@@ -184,4 +184,4 @@ async function testEmailToTaskConversion() {
 }
 
 // Run test
-testEmailToTaskConversion()
+// testEmailToTaskConversion()

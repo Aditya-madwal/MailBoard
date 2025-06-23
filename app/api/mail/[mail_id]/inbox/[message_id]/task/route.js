@@ -1,64 +1,48 @@
-// // app/api/mail/[mail_id]/inbox/[message_id]/task/route.js
+// app/api/mail/[mail_id]/inbox/[message_id]/task/route.js
 
-// import { NextResponse } from 'next/server'
-// import InboxMail from '@/models/InboxMail'
-// import Task from '@/models/Task'
-// import dbConnect from '@/lib/db'
-// import { validateAuth } from '@/lib/auth'
-// import { convertEmailToTask } from '@/services/ai/emailToTask' // <- ✅ you must export it from your Gemini script
+import { NextResponse } from 'next/server'
+import InboxMail from '@/models/InboxMail'
+import Task from '@/models/Task'
+import dbConnect from '@/lib/db'
+import { validateAuth } from '@/lib/auth'
+import { convertEmailToTask } from '@/services/ai/emailToTask' // <- ✅ you must export it from your Gemini script
 
-// export async function POST(req, { params }) {
-//     await dbConnect()
+export async function POST(request, { params }) {
+    await dbConnect()
 
-//     const { mail_id, message_id } = await params
+    const { mail_id, message_id } = await params
 
-//     return NextResponse.json({
-//         mail_id,
-//         message_id,
-//     })
+    const authResult = await validateAuth(request)
+    if (!authResult.isValid) {
+        return NextResponse.json({ error: authResult.error }, { status: 401 })
+    }
 
-//     // Authenticate user
-//     const authResult = await validateAuth(request)
-//     if (!authResult.isValid) {
-//         return NextResponse.json({ error: authResult.error }, { status: 401 })
-//     }
+    const userId = authResult.user.userId
 
-//     // Find Gmail account and verify ownership
-//     // const gmailAccount = await GmailAccount.findById(mail_id)
-//     // const { oauth2Client, gmailAccount } = await getValidOAuthClient(mail_id)
-//     // if (!gmailAccount || gmailAccount.user.toString() !== authResult.user.userId) {
-//     //     return NextResponse.json({ error: 'Unauthorized or Gmail account not found' }, { status: 403 })
-//     // }
+    try {
+        const mail = await InboxMail.findOne({
+            messageId: message_id,
+            user: userId,
+        }).lean()
 
-//     const userId = authResult.user.userId
+        if (!mail) {
+            return NextResponse.json({ error: 'Mail not found' }, { status: 404 })
+        }
 
-//     try {
-//         const mail = await InboxMail.findOne({
-//             _id: mail_id,
-//             messageId: message_id,
-//             user: userId,
-//         }).lean()
+        const taskPayload = await convertEmailToTask(mail)
 
-//         if (!mail) {
-//             return NextResponse.json({ error: 'Mail not found' }, { status: 404 })
-//         }
+        const newTask = new Task({
+            ...taskPayload,
+            createdBy: userId,
+            UserCategory: mail.UserCategory || null,
+        })
 
-//         // ✅ Use Gemini AI to convert email to task structure
-//         const taskPayload = await convertEmailToTask(mail)
+        await newTask.save()
 
-//         // ✅ Attach required fields from server logic
-//         const newTask = new Task({
-//             ...taskPayload,
-//             createdBy: userId,
-//             UserCategory: mail.UserCategory || null,
-//         })
+        return NextResponse.json({ success: true, task: newTask }, { status: 201 })
 
-//         await newTask.save()
-
-//         return NextResponse.json({ success: true, task: newTask }, { status: 201 })
-
-//     } catch (error) {
-//         console.error('Email to Task Error:', error)
-//         return NextResponse.json({ error: 'Failed to create task' }, { status: 500 })
-//     }
-// }
+    } catch (error) {
+        console.error('Email to Task Error:', error)
+        return NextResponse.json({ error: 'Failed to create task' }, { status: 500 })
+    }
+}
