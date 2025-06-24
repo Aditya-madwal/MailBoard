@@ -18,7 +18,7 @@ export async function GET(request) {
         const gmailAccounts = await GmailAccount.find({ user: userId }).select('-accessToken -refreshToken') // Exclude tokens
 
         return NextResponse.json({
-            data: { gmailAccounts },
+            data: gmailAccounts,
             error: null
         })
 

@@ -18,7 +18,7 @@ export async function GET(request) {
 
         const categories = await UserCategory.find({ user: userId }).sort({ createdAt: -1 })
 
-        return NextResponse.json({ categories }, { status: 200 })
+        return NextResponse.json({ data: categories }, { status: 200 })
     } catch (err) {
         console.error('Error fetching user categories:', err)
         return NextResponse.json({ error: 'Failed to fetch user categories' }, { status: 500 })

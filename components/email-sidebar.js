@@ -1,12 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Star, CheckSquare, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { EmailDetailModal } from "@/components/email-detail-modal"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { useMail } from "@/context/mailContext"
 
 const emails = [
   {
@@ -87,6 +88,11 @@ export function EmailSidebar() {
   const [selectedEmail, setSelectedEmail] = useState(1)
   const [emailDetailOpen, setEmailDetailOpen] = useState(false)
   const [selectedEmailForDetail, setSelectedEmailForDetail] = useState(null)
+  const { mailAccounts } = useMail()
+
+  useEffect(() => {
+    console.log(mailAccounts)
+  }, [mailAccounts])
 
   const createTodo = (email) => {
     // This would integrate with your todo system

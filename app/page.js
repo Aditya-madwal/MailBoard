@@ -37,7 +37,7 @@ const testimonials = [
     role: "Marketing Director",
     company: "TechCorp",
     avatar: "/placeholder.svg?height=40&width=40",
-    content: "EmailFlow transformed how I manage my work emails. The AI categorization is incredibly accurate!",
+    content: "MailBoard transformed how I manage my work emails. The AI categorization is incredibly accurate!",
     rating: 5,
   },
   {
@@ -75,7 +75,7 @@ export default function LandingPage() {
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-purple-600">
               <Sparkles className="h-4 w-4 text-white" />
             </div>
-            <span className="text-xl font-bold">EmailFlow</span>
+            <span className="text-xl font-bold">MailBoard</span>
           </div>
 
           <nav className="hidden md:flex items-center gap-6">
@@ -185,7 +185,7 @@ export default function LandingPage() {
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Loved by Thousands of Users</h2>
-            <p className="text-xl text-muted-foreground">See what our users have to say about EmailFlow</p>
+            <p className="text-xl text-muted-foreground">See what our users have to say about MailBoard</p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-6">
@@ -307,7 +307,7 @@ export default function LandingPage() {
         <div className="container mx-auto text-center max-w-3xl">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to Transform Your Email Experience?</h2>
           <p className="text-xl text-muted-foreground mb-8">
-            Join thousands of users who have already streamlined their email workflow with EmailFlow.
+            Join thousands of users who have already streamlined their email workflow with MailBoard.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button
@@ -336,7 +336,7 @@ export default function LandingPage() {
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-purple-600">
                   <Sparkles className="h-4 w-4 text-white" />
                 </div>
-                <span className="text-lg font-bold">EmailFlow</span>
+                <span className="text-lg font-bold">MailBoard</span>
               </div>
               <p className="text-sm text-muted-foreground">Smart email management for the modern professional.</p>
             </div>
@@ -388,7 +388,7 @@ export default function LandingPage() {
           </div>
 
           <div className="border-t mt-8 pt-8 text-center text-sm text-muted-foreground">
-            <p>&copy; 2024 EmailFlow. All rights reserved.</p>
+            <p>&copy; 2024 MailBoard. All rights reserved.</p>
           </div>
         </div>
       </footer>

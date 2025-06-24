@@ -86,7 +86,7 @@ export function CategoryOnboardingModal({ open, onOpenChange, onComplete }) {
                         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-purple-600">
                             <Sparkles className="h-4 w-4 text-white" />
                         </div>
-                        <DialogTitle className="text-xl">Welcome to EmailFlow!</DialogTitle>
+                        <DialogTitle className="text-xl">Welcome to MailBoard!</DialogTitle>
                     </div>
                     <DialogDescription className="text-base">
                         Let's set up your email categories to help organize your inbox. You can always add more later.

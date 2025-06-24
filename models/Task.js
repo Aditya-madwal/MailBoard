@@ -45,12 +45,6 @@ const taskSchema = new mongoose.Schema({
         default: []
     },
 
-    UserCategory: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'UserCategory',
-        required: false
-    },
-
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',

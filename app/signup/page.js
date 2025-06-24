@@ -99,7 +99,7 @@ export default function SignupPage() {
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-purple-600">
               <Sparkles className="h-5 w-5 text-white" />
             </div>
-            <span className="text-xl font-bold">EmailFlow</span>
+            <span className="text-xl font-bold">MailBoard</span>
           </div>
           <CardTitle className="text-2xl">Create your account</CardTitle>
           <CardDescription>Get started with smart email management and AI-powered productivity</CardDescription>

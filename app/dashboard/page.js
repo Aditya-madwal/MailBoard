@@ -6,33 +6,16 @@ import { EmailSidebar } from "@/components/email-sidebar"
 import { TodoKanban } from "@/components/todo-kanban"
 import { useSidebar } from "@/components/ui/sidebar"
 import { SidebarInset } from "@/components/ui/sidebar"
-// import { useEffect } from "react"
 import axios from 'axios'
 import { useState, useEffect } from "react"
 import { CategoryOnboardingModal } from "@/components/category-onboarding-modal"
+import { useMail } from "@/context/mailContext"
 // make changes here to avoid negative space from sidebar
 
 export default function Dashboard() {
     const { open, state } = useSidebar()
     const [showOnboarding, setShowOnboarding] = useState(false)
     const [userCategories, setUserCategories] = useState([])
-
-    // const getinboxall = async () => {
-    //     try {
-    //         const response = await axios.get('/api/mail/6856fbcf6f91466132aa397e/inbox/all', {
-    //             headers: {
-    //                 'Content-Type': 'application/json',
-    //             },
-    //         })
-    //         console.log(response.data)
-    //     } catch (error) {
-    //         console.error('Inbox fetch error:', error.response?.data || error.message)
-    //     }
-    // }
-
-    // useEffect(() => {
-    //     getinboxall()
-    // }, [])
 
 
     // Alert whenever sidebar toggles
