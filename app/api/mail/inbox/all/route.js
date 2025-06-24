@@ -26,7 +26,7 @@ export async function GET(request) {
         // console.log(mails[0].UserCategory)
         // console.log(mails[0]._id)
 
-        return NextResponse.json({ inbox: mails }, { status: 200 })
+        return NextResponse.json(mails, { status: 200 })
     } catch (error) {
         console.error('Unified inbox fetch error:', error)
         return NextResponse.json({ error: 'Failed to fetch inbox' }, { status: 500 })

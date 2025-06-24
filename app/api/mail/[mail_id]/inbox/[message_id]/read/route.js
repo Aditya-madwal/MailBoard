@@ -6,6 +6,7 @@ import GmailAccount from '@/models/GmailAccount'
 import { validateAuth } from '@/lib/auth'
 import { NextResponse } from 'next/server'
 import { getValidOAuthClient } from '@/services/mail/getValidOAuthClient'
+import InboxMail from '@/models/InboxMail'
 
 export async function PATCH(request, { params }) {
     try {
@@ -40,6 +41,11 @@ export async function PATCH(request, { params }) {
                 removeLabelIds: ['UNREAD'] // ✅ only this is needed
             }
         })
+
+        await InboxMail.findOneAndUpdate(
+            { messageId: message_id },
+            { isUnread: false }
+        )
 
         return NextResponse.json({ message: 'Message marked as read' })
     } catch (err) {

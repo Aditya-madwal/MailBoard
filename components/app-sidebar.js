@@ -54,9 +54,12 @@ export function AppSidebar() {
   //   loadAccounts()
   //   loadCategories()
   // }, [])
-  const { mailAccounts, setMailAccounts, categories, setCategories } = useMail()
+  const { mailAccounts, setMailAccounts, categories, setCategories, emails, setEmails } = useMail()
 
   useEffect(() => {
+
+
+
     async function initAccounts() {
       const accounts = await fetchEmailAccounts()
       setMailAccounts(accounts)
@@ -119,7 +122,7 @@ export function AppSidebar() {
                       </div>
                       {account.unread > 0 && (
                         <Badge variant="secondary" className="ml-auto">
-                          {account.unread}
+                          {emails?.filter((e) => e.isUnread && e.gmailAccount == account.id).length}
                         </Badge>
                       )}
                     </SidebarMenuButton>

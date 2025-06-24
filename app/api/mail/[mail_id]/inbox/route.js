@@ -128,7 +128,7 @@ export async function GET(request, { params }) {
             })
         )
 
-        return NextResponse.json({ inbox: summarizedMessages })
+        return NextResponse.json(summarizedMessages)
     } catch (err) {
         console.error('Inbox summary fetch error:', err)
         return NextResponse.json({ error: 'Failed to fetch inbox summary' }, { status: 500 })

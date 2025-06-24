@@ -15,6 +15,17 @@ export async function getAllInboxEmails(accountId) {
     }
 }
 
+// get inbox from google for a specific account
+export async function getInboxEmails(accountId) {
+    try {
+        const response = await axios.get(`${BASE_URL}/api/mail/${accountId}/inbox/`)
+        return response.data.inbox
+    } catch (err) {
+        console.error("Failed to fetch all inbox emails:", err)
+        return null
+    }
+}
+
 /**
  * Get all emails across all accounts
  */
