@@ -27,40 +27,12 @@ import { getAllCategories } from "@/services/api/category/index"
 import { useMail } from "@/context/mailContext"
 // import { Icon } from "@public"
 
-const labels = [
-  { name: "Primary", color: "bg-red-500", count: 45 },
-  { name: "Social", color: "bg-blue-500", count: 12 },
-  { name: "Promotions", color: "bg-green-500", count: 28 },
-  { name: "Updates", color: "bg-yellow-500", count: 7 },
-  { name: "Forums", color: "bg-purple-500", count: 3 },
-]
-
 export function AppSidebar() {
   const [connectDialogOpen, setConnectDialogOpen] = useState(false)
   const [createCategoryDialogOpen, setCreateCategoryDialogOpen] = useState(false)
-  const { sample, setSample } = useMail()
-
-
-  // useEffect(() => {
-  //   async function loadAccounts() {
-  //     const accounts = await fetchmailAccounts()
-  //     setmailAccounts(accounts)
-  //   }
-
-  //   async function loadCategories() {
-  //     const categories = await getAllCategories()
-  //     setCategories(categories)
-  //   }
-
-  //   loadAccounts()
-  //   loadCategories()
-  // }, [])
-  const { mailAccounts, setMailAccounts, categories, setCategories, emails, setEmails } = useMail()
+  const { mailAccounts, setMailAccounts, categories, setCategories, emails, setEmails, labels } = useMail()
 
   useEffect(() => {
-
-
-
     async function initAccounts() {
       const accounts = await fetchEmailAccounts()
       setMailAccounts(accounts)
@@ -107,9 +79,9 @@ export function AppSidebar() {
               <SidebarMenu>
                 {mailAccounts?.map((account) => (
                   <SidebarMenuItem key={account.id}>
-                    <SidebarMenuButton isActive={account.isActive} className="h-12 justify-start">
+                    <SidebarMenuButton className="h-12 justify-start">
                       <Avatar className="h-8 w-8">
-                        <AvatarImage src={account.avatar} />
+                        <AvatarImage src={account?.avatar} />
                         <AvatarFallback>
                           {account.name
                             .split(" ")
@@ -121,11 +93,9 @@ export function AppSidebar() {
                         <span className="text-sm font-medium truncate">{account.name}</span>
                         <span className="text-xs text-muted-foreground truncate">{account.email}</span>
                       </div>
-                      {/* {account.unread > 0 && ( */}
                       <Badge variant="secondary" className="ml-auto text-xs w-fit">
                         {emails?.filter((e) => e.isUnread && e.gmailAccount == account.id).length}
                       </Badge>
-                      {/* // )} */}
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))}
@@ -175,7 +145,7 @@ export function AppSidebar() {
                       <div className={`h-3 w-3 rounded-full ${label.color}`} />
                       <span>{label.name}</span>
                       <Badge variant="secondary" className="ml-auto">
-                        {label.count}
+                        {emails?.filter((e) => e.gmailCategory.toLowerCase() == label.name.toLowerCase()).length}
                       </Badge>
                     </SidebarMenuButton>
                   </SidebarMenuItem>

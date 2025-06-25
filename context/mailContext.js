@@ -19,7 +19,13 @@ export const MailProvider = ({ children }) => {
     const [tasks, setTasks] = useState([])
 
     // Labels (e.g., Primary, Promotions, Custom)
-    const [labels, setLabels] = useState([])
+    const [labels, setLabels] = useState([
+        { name: "Primary", color: "bg-red-500" },
+        { name: "Social", color: "bg-blue-500" },
+        { name: "Promotions", color: "bg-green-500" },
+        { name: "Updates", color: "bg-yellow-500" },
+        { name: "Forums", color: "bg-purple-500" },
+    ])
 
     // Example extra (for debugging/test)
     const [sample, setSample] = useState("hello")
