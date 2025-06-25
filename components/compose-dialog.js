@@ -10,48 +10,51 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
+import { useMail } from "@/context/mailContext"
+import { useEffect } from "react"
 
 export function ComposeDialog({ open, onOpenChange }) {
+  const { mailAccounts } = useMail()
   const [formData, setFormData] = useState({
-    from: "john.doe@gmail.com",
+    from: "",
     to: "",
     cc: "",
     bcc: "",
     subject: "",
     body: "",
   })
+
+  useEffect(() => {
+    if (mailAccounts.length > 0 && !formData.from) {
+      setFormData(prev => ({
+        ...prev,
+        from: mailAccounts[0].email,
+      }))
+    }
+  }, [mailAccounts])
+
   const [attachments, setAttachments] = useState([])
   const [showCc, setShowCc] = useState(false)
   const [showBcc, setShowBcc] = useState(false)
   const [isAiGenerating, setIsAiGenerating] = useState(false)
 
-  const emailAccounts = ["john.doe@gmail.com", "work@company.com", "personal@gmail.com"]
+  // const emailAccounts = ["john.doe@gmail.com", "work@company.com", "personal@gmail.com"]
+  const emailAccounts = mailAccounts.map((account) => account.email)
 
   const handleAiGenerate = async () => {
     setIsAiGenerating(true)
 
     // Simulate AI generation
-    setTimeout(() => {
-      setFormData((prev) => ({
-        ...prev,
-        body: `Hi there,
-
-I hope this email finds you well. I wanted to reach out regarding the project we discussed earlier.
-
-Based on our conversation, I believe we can move forward with the proposed timeline and deliverables. Please let me know if you have any questions or concerns.
-
-Looking forward to your response.
-
-Best regards,
-John Doe`,
-      }))
-      setIsAiGenerating(false)
-    }, 2000)
+    setFormData((prev) => ({
+      ...prev,
+      body: ``,
+    }))
+    setIsAiGenerating(false)
   }
 
   const handleSend = () => {
     console.log("Sending email:", formData)
-    onOpenChange(false)
+    // onOpenChange(false)
     // Reset form
     setFormData({
       from: "john.doe@gmail.com",

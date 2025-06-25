@@ -120,11 +120,11 @@ export function AppSidebar() {
                         <span className="text-sm font-medium truncate">{account.name}</span>
                         <span className="text-xs text-muted-foreground truncate">{account.email}</span>
                       </div>
-                      {account.unread > 0 && (
-                        <Badge variant="secondary" className="ml-auto">
-                          {emails?.filter((e) => e.isUnread && e.gmailAccount == account.id).length}
-                        </Badge>
-                      )}
+                      {/* {account.unread > 0 && ( */}
+                      <Badge variant="secondary" className="ml-auto text-xs w-fit">
+                        {emails?.filter((e) => e.isUnread && e.gmailAccount == account.id).length}
+                      </Badge>
+                      {/* // )} */}
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))}
