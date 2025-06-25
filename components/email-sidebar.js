@@ -304,18 +304,19 @@ export function EmailSidebar() {
     setSelectedEmailForDetail(email)
     setEmailDetailOpen(true)
     // mark email as read
-    try {
-      await markEmailAsRead(email?.gmailAccount, email?.messageId)
-      // update local state
-      setEmails((prevEmails) =>
-        prevEmails.map((e) =>
-          e._id === email._id ? { ...e, isUnread: false } : e
+    if (email.isUnread) {
+      try {
+        await markEmailAsRead(email?.gmailAccount, email?.messageId)
+        // update local state
+        setEmails((prevEmails) =>
+          prevEmails.map((e) =>
+            e._id === email._id ? { ...e, isUnread: false } : e
+          )
         )
-      )
-    } catch (err) {
-      console.error("Error marking email as read:", err)
+      } catch (err) {
+        console.error("Error marking email as read:", err)
+      }
     }
-
   }
 
   const formatTime = (dateString) => {
