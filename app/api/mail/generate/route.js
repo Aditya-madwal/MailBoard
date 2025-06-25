@@ -17,7 +17,7 @@ export async function POST(request) {
             return NextResponse.json({ error: "Failed to generate email body" }, { status: 500 })
         }
 
-        return NextResponse.json({ body: emailBody }, { status: 200 })
+        return NextResponse.json({ data: emailBody }, { status: 200 })
     } catch (error) {
         console.error("API Error:", error)
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })

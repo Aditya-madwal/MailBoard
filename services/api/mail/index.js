@@ -112,3 +112,16 @@ export async function downloadAttachment(accountId, emailId, attachmentId) {
         return null
     }
 }
+
+/**
+ * Generate email body using AI
+ */
+export async function generateEmailBody(subject) {
+    try {
+        const response = await axios.post(`${BASE_URL}/api/mail/generate/`, { subject })
+        return response.data.data
+    } catch (err) {
+        console.error("Failed to generate email body:", err)
+        return null
+    }
+}

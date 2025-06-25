@@ -25,6 +25,7 @@ import axios from "axios"
 import { fetchEmailAccounts } from "@/services/api/mail/accounts"
 import { getAllCategories } from "@/services/api/category/index"
 import { useMail } from "@/context/mailContext"
+// import { Icon } from "@public"
 
 const labels = [
   { name: "Primary", color: "bg-red-500", count: 45 },
@@ -84,8 +85,8 @@ export function AppSidebar() {
       <Sidebar className="bg-black z-70 border-r">
         <SidebarHeader className="p-4">
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-purple-600">
-              <Sparkles className="h-4 w-4 text-white" />
+            <div className="flex h-8 w-8 items-center justify-center">
+              <img src="/icon.svg" alt="Icon" className="w-fit h-fit object-cover" />
             </div>
             <span className="text-lg font-semibold">MailBoard</span>
             {/* <button className="border" onClick={() => setSample(`sample no. : ${Math.random()}`)}> */}

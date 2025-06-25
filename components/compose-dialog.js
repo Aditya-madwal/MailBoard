@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { useMail } from "@/context/mailContext"
 import { useEffect } from "react"
+import { generateEmailBody } from "@/services/api/mail/index"
 
 export function ComposeDialog({ open, onOpenChange }) {
   const { mailAccounts } = useMail()
@@ -43,13 +44,19 @@ export function ComposeDialog({ open, onOpenChange }) {
 
   const handleAiGenerate = async () => {
     setIsAiGenerating(true)
-
+    try {
+      const emailBody = await generateEmailBody(formData.subject)
+      console.log(emailBody)
+      setFormData((prev) => ({
+        ...prev,
+        body: emailBody,
+      }))
+    } catch (e) {
+      alert(e)
+    } finally {
+      setIsAiGenerating(false)
+    }
     // Simulate AI generation
-    setFormData((prev) => ({
-      ...prev,
-      body: ``,
-    }))
-    setIsAiGenerating(false)
   }
 
   const handleSend = () => {

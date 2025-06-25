@@ -150,9 +150,9 @@ export const EmailDetailModal = ({ email: initialEmail, open, onOpenChange }) =>
                             <div className="flex items-start justify-between">
                                 <div className="flex items-center gap-3 flex-1 min-w-0">
                                     <Avatar className="h-10 w-10">
-                                        <AvatarImage src={email.senderPicture || "/placeholder.svg"} />
+                                        <AvatarImage src={email?.senderPicture || null} />
                                         <AvatarFallback>
-                                            {email.senderName?.split(" ").map((n) => n[0]).join("") || "U"}
+                                            {email?.senderName?.split(" ").map((n) => n[0]).join("")}
                                         </AvatarFallback>
                                     </Avatar>
                                     <div className="flex-1 min-w-0">
@@ -223,7 +223,7 @@ export const EmailDetailModal = ({ email: initialEmail, open, onOpenChange }) =>
 
                         <div className="flex-1 overflow-y-auto py-2">
                             <div className="prose prose-sm max-w-none">
-                                {email.body ? (
+                                {email?.body ? (
                                     <div
                                         className="text-sm leading-relaxed"
                                         dangerouslySetInnerHTML={{ __html: email.body }}

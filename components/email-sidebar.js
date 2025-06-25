@@ -237,36 +237,6 @@ export function EmailSidebar() {
     console.log(`Changing email ${emailId} category to ${newCategoryId}`)
   }
 
-  // const refreshInbox = async () => {
-
-  //   setIsRefreshing(true);
-
-  //   try {
-  //     // Use Promise.all to wait for all requests to complete
-  //     await Promise.all(mailAccounts.map(async (mail) => {
-  //       console.log("fetching inbox for", mail.id);
-
-  //       try {
-  //         const response = await getInboxEmails(mail.id);
-  //         // alert("got it for " + mail.id);
-  //       } catch (err) {
-  //         console.error(`Error refreshing inbox for ${mail.id}:`, err);
-  //         // alert(`error for ${mail.id}`);
-  //         // Note: Individual failures won't stop other requests
-  //       }
-  //     }));
-
-  //     // fetch all the emails from inbox database
-  //     const response = await getAllEmails()
-  //     setEmails(response || [])
-  //     console.log("emails fetched")
-  //   } catch (err) {
-  //     console.error("Overall refresh error:", err);
-  //   } finally {
-  //     setIsRefreshing(false);
-  //   }
-  // };
-
   const refreshInbox = async () => {
     setIsRefreshing(true);
 
@@ -366,7 +336,7 @@ export function EmailSidebar() {
                 >
                   <div className="flex items-start gap-3">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src={email?.senderPicture || "/placeholder.svg"} />
+                      <AvatarImage src={email?.senderPicture || null} />
                       <AvatarFallback>
                         {email?.senderName?.split(" ").map((n) => n[0]).join("")}
                       </AvatarFallback>
