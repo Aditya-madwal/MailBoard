@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { useEffect, useState } from "react"
+import { useRouter, useSearchParams, usePathname } from "next/navigation"
 import { Plus, Settings, LogOut, Sparkles } from "lucide-react"
 import {
   Sidebar,
@@ -25,12 +26,65 @@ import axios from "axios"
 import { fetchEmailAccounts } from "@/services/api/mail/accounts"
 import { getAllCategories } from "@/services/api/category/index"
 import { useMail } from "@/context/mailContext"
-// import { Icon } from "@public"
 
 export function AppSidebar() {
   const [connectDialogOpen, setConnectDialogOpen] = useState(false)
   const [createCategoryDialogOpen, setCreateCategoryDialogOpen] = useState(false)
   const { mailAccounts, setMailAccounts, categories, setCategories, emails, setEmails, labels } = useMail()
+
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const pathname = usePathname()
+
+  // Get current active filters
+  const activeCategory = searchParams.get('category')
+  const activeLabel = searchParams.get('label')
+
+  // Helper function to update URL parameters
+  const updateUrlParams = (newCategory, newLabel) => {
+    const params = new URLSearchParams(searchParams.toString())
+
+    // Handle category parameter
+    if (newCategory === null) {
+      params.delete('category')
+    } else {
+      params.set('category', newCategory)
+    }
+
+    // Handle label parameter
+    if (newLabel === null) {
+      params.delete('label')
+    } else {
+      params.set('label', newLabel)
+    }
+
+    // Navigate to updated URL
+    const queryString = params.toString()
+    const newUrl = queryString ? `${pathname}?${queryString}` : pathname
+    router.push(newUrl)
+  }
+
+  // Handle category click
+  const handleCategoryClick = (categoryName) => {
+    // If clicking the same category, toggle it off
+    if (activeCategory === categoryName) {
+      updateUrlParams(null, activeLabel)
+    } else {
+      // Set new category, keep existing label
+      updateUrlParams(categoryName, activeLabel)
+    }
+  }
+
+  // Handle label click
+  const handleLabelClick = (labelName) => {
+    // If clicking the same label, toggle it off
+    if (activeLabel === labelName.toLowerCase()) {
+      updateUrlParams(activeCategory, null)
+    } else {
+      // Set new label, keep existing category
+      updateUrlParams(activeCategory, labelName.toLowerCase())
+    }
+  }
 
   useEffect(() => {
     async function initAccounts() {
@@ -67,7 +121,7 @@ export function AppSidebar() {
 
         <SidebarContent>
           <SidebarGroup>
-            <div className="flex items-center justify-between px-2">
+            <div className="flex items-center justify-between">
               <SidebarGroupLabel>Email Accounts</SidebarGroupLabel>
               <Button variant="ghost" size="sm" onClick={() => setConnectDialogOpen(true)} className="h-6 w-6 p-0">
                 <Plus className="h-4 w-4" />
@@ -101,7 +155,6 @@ export function AppSidebar() {
             </SidebarGroupContent>
           </SidebarGroup>
 
-          {/* Other groups remain same */}
           {/* Categories */}
           <SidebarGroup>
             <div className="flex items-center justify-between w-full">
@@ -119,10 +172,19 @@ export function AppSidebar() {
               <SidebarMenu>
                 {categories?.map((category) => (
                   <SidebarMenuItem key={category.name}>
-                    <SidebarMenuButton className="justify-start">
+                    <SidebarMenuButton
+                      className={`justify-start cursor-pointer transition-colors ${activeCategory === category.name
+                        ? 'bg-accent text-accent-foreground hover:bg-accent hover:text-accent-foreground'
+                        : 'hover:bg-accent/50'
+                        }`}
+                      onClick={() => handleCategoryClick(category.name)}
+                    >
                       <div className={`h-3 w-3 rounded-full ${category.color}`} />
                       <span>{category.name}</span>
-                      <Badge variant="secondary" className="ml-auto">
+                      <Badge
+                        variant={activeCategory === category.name ? "default" : "secondary"}
+                        className="ml-auto"
+                      >
                         {emails?.filter((e) => e.UserCategory === category._id).length}
                       </Badge>
                     </SidebarMenuButton>
@@ -139,10 +201,19 @@ export function AppSidebar() {
               <SidebarMenu>
                 {labels.map((label) => (
                   <SidebarMenuItem key={label.name}>
-                    <SidebarMenuButton className="justify-start">
+                    <SidebarMenuButton
+                      className={`justify-start cursor-pointer transition-colors ${activeLabel === label.name.toLowerCase()
+                        ? 'bg-accent text-accent-foreground hover:bg-accent hover:text-accent-foreground'
+                        : 'hover:bg-accent/50'
+                        }`}
+                      onClick={() => handleLabelClick(label.name)}
+                    >
                       <div className={`h-3 w-3 rounded-full ${label.color}`} />
                       <span>{label.name}</span>
-                      <Badge variant="secondary" className="ml-auto">
+                      <Badge
+                        variant={activeLabel === label.name.toLowerCase() ? "default" : "secondary"}
+                        className="ml-auto"
+                      >
                         {emails?.filter((e) => e.gmailCategory.toLowerCase() == label.name.toLowerCase()).length}
                       </Badge>
                     </SidebarMenuButton>

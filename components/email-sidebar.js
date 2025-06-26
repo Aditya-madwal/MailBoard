@@ -1,6 +1,7 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo } from "react"
+import { useSearchParams } from "next/navigation"
 import { Star, CheckSquare, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -18,18 +19,73 @@ export function EmailSidebar() {
   const [isRefreshing, setIsRefreshing] = useState(false)
   const { emails, setEmails, categories, mailAccounts } = useMail()
 
-  useEffect(() => {
-    const fetchMails = async () => {
-      try {
-        console.log("fetching all emails")
-        const response = await getAllEmails()
-        setEmails(response || [])
-        console.log("emails fetched")
-        // console.log(response)
-      } catch (err) {
-        console.error("Error loading emails:", err)
+  // Get URL parameters for filtering
+  const searchParams = useSearchParams()
+  const categoryParam = searchParams.get('category')
+  const labelParam = searchParams.get('label')
+
+  // Filter emails based on URL parameters
+  const filteredEmails = useMemo(() => {
+    if (!emails) return []
+
+    let filtered = [...emails]
+
+    // Filter by category if category parameter exists
+    if (categoryParam) {
+      // Find category by name (case-insensitive) or ID
+      const targetCategory = categories.find(cat =>
+        cat.name.toLowerCase() === categoryParam.toLowerCase() ||
+        cat._id === categoryParam
+      )
+
+      if (targetCategory) {
+        filtered = filtered.filter(email => email.UserCategory === targetCategory._id)
+      } else {
+        // If category not found, show empty results
+        filtered = []
       }
     }
+
+    // Filter by label if label parameter exists
+    if (labelParam) {
+      const labelLower = labelParam.toLowerCase()
+
+      switch (labelLower) {
+        case 'primary':
+          filtered = filtered.filter(email => email.gmailCategory === 'primary')
+          break
+        case 'social':
+          filtered = filtered.filter(email => email.gmailCategory === 'social')
+          break
+        case 'promotions':
+          filtered = filtered.filter(email => email.gmailCategory === 'promotions')
+          break
+        case 'updates':
+          filtered = filtered.filter(email => email.gmailCategory === 'updates')
+          break
+        case 'forums':
+          filtered = filtered.filter(email => email.gmailCategory === 'forums')
+          break
+        default:
+          break
+      }
+    }
+
+    return filtered
+  }, [emails, categories, categoryParam, labelParam])
+
+  const fetchMails = async () => {
+    try {
+      console.log("fetching all emails")
+      const response = await getAllEmails()
+      setEmails(response || [])
+      console.log("emails fetched")
+    } catch (err) {
+      console.error("Error loading emails:", err)
+    }
+  }
+
+  useEffect(() => {
     fetchMails()
   }, [])
 
@@ -47,7 +103,6 @@ export function EmailSidebar() {
     try {
       console.log("Refreshing inboxes for all mail accounts...");
 
-      // Wait for ALL inbox fetches to complete (including failures)
       const results = await Promise.allSettled(
         mailAccounts.map((mail) =>
           getInboxEmails(mail.id)
@@ -56,12 +111,10 @@ export function EmailSidebar() {
         )
       );
 
-      // Optionally log summary:
       const successCount = results.filter(r => r.status === "fulfilled").length;
       const failCount = results.filter(r => r.status === "rejected").length;
       console.log(`Inbox refresh complete: ${successCount} success, ${failCount} failed.`);
 
-      // Now safely fetch all emails from DB
       const allEmails = await getAllEmails();
       setEmails(allEmails || []);
       console.log("📥 All emails fetched and set.");
@@ -72,16 +125,14 @@ export function EmailSidebar() {
     }
   };
 
-
   const handleEmailClick = async (email) => {
     setSelectedEmail(email?._id)
     setSelectedEmailForDetail(email)
     setEmailDetailOpen(true)
-    // mark email as read
+
     if (email.isUnread) {
       try {
         await markEmailAsRead(email?.gmailAccount, email?.messageId)
-        // update local state
         setEmails((prevEmails) =>
           prevEmails.map((e) =>
             e._id === email._id ? { ...e, isUnread: false } : e
@@ -111,9 +162,13 @@ export function EmailSidebar() {
       <div className="w-full h-full bg-muted/20 flex flex-col overflow-hidden">
         <div className="p-4 border-b flex-shrink-0 bg-background">
           <div className="flex items-center justify-between">
-            <h2 className="font-semibold">Inbox</h2>
+            <h2 className="font-semibold">
+              Inbox <span className="text-muted">({filteredEmails.length})</span>
+            </h2>
             <div className="flex items-center gap-2">
-              <Badge variant="secondary">{emails?.filter((e) => e.isUnread).length} unread</Badge>
+              <Badge variant="secondary">
+                {filteredEmails?.filter((e) => e.isUnread).length} unread
+              </Badge>
               <Button
                 variant="ghost"
                 size="sm"
@@ -126,24 +181,50 @@ export function EmailSidebar() {
               </Button>
             </div>
           </div>
+
+          {/* Show active filters */}
+          {/* {(categoryParam || labelParam) && (
+            <div className="mt-2 flex flex-wrap gap-1">
+              {categoryParam && (
+                <Badge variant="outline" className="text-xs">
+                  Category: {categories.find(cat =>
+                    cat.name.toLowerCase() === categoryParam.toLowerCase() ||
+                    cat._id === categoryParam
+                  )?.name || categoryParam}
+                </Badge>
+              )}
+              {labelParam && (
+                <Badge variant="outline" className="text-xs">
+                  Label: {labelParam}
+                </Badge>
+              )}
+            </div>
+          )} */}
         </div>
 
         <div className="flex-1 overflow-y-auto">
           {emails.length === 0 && (
             <div className="h-full w-full flex items-center justify-center">
-              {/* Minimal spinner: just a spinning border */}
               <div className="animate-spin rounded-full h-6 w-6 border-2 border-muted-foreground border-t-transparent" />
             </div>
           )}
+
+          {emails.length > 0 && filteredEmails.length === 0 && (categoryParam || labelParam) && (
+            <div className="h-full w-full flex items-center justify-center">
+              <div className="text-center text-muted-foreground">
+                <p className="text-sm">No emails found</p>
+                <p className="text-xs mt-1">Try adjusting your filters</p>
+              </div>
+            </div>
+          )}
+
           <div className="p-2">
-            {emails?.map((email) => {
+            {filteredEmails?.map((email) => {
               const category = getCategoryDetails(email?.UserCategory)
-              // Helper to get initials: skip non-alphanumeric first chars, use max 2 words
+
               const getInitials = (name) => {
                 if (!name) return "";
-                // Split, filter empty, take first 2 words
                 const words = name.split(" ").filter(Boolean).slice(0, 2);
-                // For each word, find first alphanumeric char
                 return words
                   .map(word => {
                     for (let i = 0; i < word.length; i++) {
@@ -173,7 +254,6 @@ export function EmailSidebar() {
                       <div className="flex items-center justify-between mb-1">
                         <span className={`text-sm truncate ${email?.isUnread ? "font-semibold" : ""}`}>{email?.senderName}</span>
                         <div className="flex items-center gap-1">
-                          {/* Placeholder for star if needed */}
                           <span className="text-xs text-muted-foreground">{formatTime(email?.date)}</span>
                         </div>
                       </div>
