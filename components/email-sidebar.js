@@ -325,6 +325,12 @@ export function EmailSidebar() {
         </div>
 
         <div className="flex-1 overflow-y-auto">
+          {emails.length === 0 && (
+            <div className="h-full w-full flex items-center justify-center">
+              {/* Minimal spinner: just a spinning border */}
+              <div className="animate-spin rounded-full h-6 w-6 border-2 border-muted-foreground border-t-transparent" />
+            </div>
+          )}
           <div className="p-2">
             {emails?.map((email) => {
               const category = getCategoryDetails(email?.UserCategory)
