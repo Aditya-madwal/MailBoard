@@ -2,14 +2,14 @@
 
 import { useEffect, useState, useMemo } from "react"
 import { useSearchParams } from "next/navigation"
-import { Star, CheckSquare, RefreshCw } from "lucide-react"
+import { Star, CheckSquare, RefreshCw, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { EmailDetailModal } from "@/components/email-detail-modal"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useMail } from "@/context/mailContext"
-import { getAllEmails, getInboxEmails, markEmailAsRead } from "@/services/api/mail/index"
+import { getAllEmails, getInboxEmails, markEmailAsRead, changeEmailCategory } from "@/services/api/mail/index"
 import axios from "axios"
 
 export function EmailSidebar() {
@@ -17,6 +17,7 @@ export function EmailSidebar() {
   const [emailDetailOpen, setEmailDetailOpen] = useState(false)
   const [selectedEmailForDetail, setSelectedEmailForDetail] = useState(null)
   const [isRefreshing, setIsRefreshing] = useState(false)
+  const [changingCategoryForEmail, setChangingCategoryForEmail] = useState(null) // Track which email is changing category
   const { emails, setEmails, categories, mailAccounts } = useMail()
 
   // Get URL parameters for filtering
@@ -93,8 +94,21 @@ export function EmailSidebar() {
     console.log("Creating todo from email:", email?.subject)
   }
 
-  const changeEmailCategory = (emailId, newCategoryId) => {
-    console.log(`Changing email ${emailId} category to ${newCategoryId}`)
+  const changeCategory = async (account_id, emailId, newCategoryId) => {
+    // Set loading state for this specific email
+    setChangingCategoryForEmail(emailId)
+
+    try {
+      await changeEmailCategory(account_id, emailId, newCategoryId)
+      console.log("hogya bc")
+      await fetchMails() // Refresh emails after changing category
+      console.log(`✅ Email ${emailId} category updated to ${newCategoryId}`)
+    } catch (err) {
+      console.error(`❌ Failed to change category for email ${emailId}:`, err)
+    } finally {
+      // Clear loading state
+      setChangingCategoryForEmail(null)
+    }
   }
 
   const refreshInbox = async () => {
@@ -221,6 +235,7 @@ export function EmailSidebar() {
           <div className="p-2">
             {filteredEmails?.map((email) => {
               const category = getCategoryDetails(email?.UserCategory)
+              const isChangingCategory = changingCategoryForEmail === email?.messageId
 
               const getInitials = (name) => {
                 if (!name) return "";
@@ -268,9 +283,18 @@ export function EmailSidebar() {
                         <div className="flex items-center gap-2">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <button className="flex items-center gap-2 hover:bg-accent/50 px-1 py-0.5 transition-colors border rounded-full">
-                                <div className={`h-2 w-2 rounded-full ${category?.color || "bg-gray-500"}`} />
-                                <span className="text-xs text-muted-foreground">{category?.name || "Uncategorized"}</span>
+                              <button
+                                className="flex items-center gap-2 hover:bg-accent/50 px-1 py-0.5 transition-colors border rounded-full"
+                                disabled={isChangingCategory}
+                              >
+                                {isChangingCategory ? (
+                                  <Loader2 className="h-2 w-2 animate-spin" />
+                                ) : (
+                                  <div className={`h-2 w-2 rounded-full ${category?.color || "bg-gray-500"}`} />
+                                )}
+                                <span className="text-xs text-muted-foreground">
+                                  {isChangingCategory ? "Changing..." : (category?.name || "Uncategorized")}
+                                </span>
                               </button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="start" className="w-32">
@@ -278,10 +302,12 @@ export function EmailSidebar() {
                                 <DropdownMenuItem
                                   key={cat._id}
                                   onClick={(e) => {
+                                    e.preventDefault();
                                     e.stopPropagation()
-                                    changeEmailCategory(email?._id, cat._id)
+                                    changeCategory(email?.gmailAccount, email?.messageId, cat._id)
                                   }}
                                   className="flex items-center gap-2"
+                                  disabled={isChangingCategory}
                                 >
                                   <div className={`h-2 w-2 rounded-full ${cat.color}`} />
                                   <span className="text-xs">{cat.name}</span>

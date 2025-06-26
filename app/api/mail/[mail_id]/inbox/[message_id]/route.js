@@ -174,3 +174,4 @@ function extractEmail(rawFrom) {
     const match = rawFrom.match(/<(.*)>/)
     return match ? match[1] : rawFrom
 }
+

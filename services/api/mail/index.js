@@ -128,3 +128,17 @@ export async function generateEmailBody(subject) {
         return null
     }
 }
+
+/**
+ * change email category
+ */
+export async function changeEmailCategory(accountId, emailId, category) {
+    try {
+        const response = await axios.patch(`${BASE_URL}/api/mail/${accountId}/inbox/${emailId}/category/`, { new_category: category })
+        return response.data
+    } catch (err) {
+        console.error("Failed to change email category:", err)
+        toast.error("Failed to change email category. Please try again.")
+        return null
+    }
+}
