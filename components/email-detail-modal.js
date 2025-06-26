@@ -657,7 +657,9 @@ export const EmailDetailModal = ({ email: initialEmail, open, onOpenChange }) =>
                                                     </div>
                                                 </div>
                                                 <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                                                    <Download className="h-4 w-4" />
+                                                    <a href={`/api/mail/${email.gmailAccount}/inbox/${email.messageId}/attachment/${att.attachmentId}`} target="blank">
+                                                        <Download className="h-4 w-4" />
+                                                    </a>
                                                 </Button>
                                             </div>
                                         ))}

@@ -1,18 +1,22 @@
-// app/api/mail/[mail_id]/inbox/[message_id]/attachment/[attachment_id]/route.js
-
 import { google } from 'googleapis'
 import dbConnect from '@/lib/db'
-import GmailAccount from '@/models/GmailAccount'
 import { validateAuth } from '@/lib/auth'
 import { NextResponse } from 'next/server'
 import { getValidOAuthClient } from '@/services/mail/getValidOAuthClient'
 
+// Convert Buffer to ReadableStream for binary download support
+function bufferToReadableStream(buffer) {
+    return new ReadableStream({
+        start(controller) {
+            controller.enqueue(buffer)
+            controller.close()
+        },
+    })
+}
+
 export async function GET(request, { params }) {
     try {
         const { mail_id, message_id, attachment_id } = await params
-
-        // const context = await contextPromise
-        // const { mail_id, message_id, attachment_id } = context.params
 
         if (!mail_id || !message_id || !attachment_id) {
             return NextResponse.json({ error: 'Missing params' }, { status: 400 })
@@ -25,18 +29,14 @@ export async function GET(request, { params }) {
             return NextResponse.json({ error: authResult.error }, { status: 401 })
         }
 
-        // const gmailAccount = await GmailAccount.findById(mail_id)
         const { oauth2Client, gmailAccount } = await getValidOAuthClient(mail_id)
         if (!gmailAccount || gmailAccount.user.toString() !== authResult.user.userId) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
         }
 
-        // const oauth2Client = new google.auth.OAuth2()
-        // oauth2Client.setCredentials({ access_token: gmailAccount.accessToken })
-
         const gmail = google.gmail({ version: 'v1', auth: oauth2Client })
 
-        // Fetch attachment metadata
+        // Fetch attachment content
         const attachmentRes = await gmail.users.messages.attachments.get({
             userId: 'me',
             messageId: message_id,
@@ -46,7 +46,7 @@ export async function GET(request, { params }) {
         const fileData = attachmentRes.data.data
         const fileBuffer = Buffer.from(fileData, 'base64')
 
-        // Optional: You may want to fetch the filename and mimeType from message details
+        // Fetch metadata for filename and MIME type
         const msgDetail = await gmail.users.messages.get({
             userId: 'me',
             id: message_id,
@@ -57,7 +57,8 @@ export async function GET(request, { params }) {
         const filename = part?.filename || 'attachment'
         const mimeType = part?.mimeType || 'application/octet-stream'
 
-        return new NextResponse(fileBuffer, {
+        // Return the buffer as a proper download stream
+        return new NextResponse(bufferToReadableStream(fileBuffer), {
             status: 200,
             headers: {
                 'Content-Type': mimeType,

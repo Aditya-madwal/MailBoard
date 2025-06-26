@@ -15,15 +15,93 @@ import { useEffect } from "react"
 import { generateEmailBody } from "@/services/api/mail/index"
 import { sendEmail } from "@/services/api/mail/index"
 
+// Email input component for handling multiple recipients
+function EmailInput({ label, placeholder, emails, onEmailsChange, onToggle, showField = true }) {
+  const [inputValue, setInputValue] = useState("")
+
+  const addEmail = (email) => {
+    const trimmedEmail = email.trim()
+    if (trimmedEmail && isValidEmail(trimmedEmail) && !emails.includes(trimmedEmail)) {
+      onEmailsChange([...emails, trimmedEmail])
+    }
+    setInputValue("")
+  }
+
+  const removeEmail = (emailToRemove) => {
+    onEmailsChange(emails.filter(email => email !== emailToRemove))
+  }
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault()
+      addEmail(inputValue)
+    } else if (e.key === 'Backspace' && inputValue === '' && emails.length > 0) {
+      removeEmail(emails[emails.length - 1])
+    }
+  }
+
+  const handleBlur = () => {
+    if (inputValue.trim()) {
+      addEmail(inputValue)
+    }
+  }
+
+  const isValidEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    return emailRegex.test(email)
+  }
+
+  if (!showField) return null
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <Label>{label}</Label>
+        {onToggle && (
+          <Button variant="ghost" size="sm" onClick={onToggle} className="text-xs">
+            <X className="h-3 w-3" />
+          </Button>
+        )}
+      </div>
+      <div className="flex flex-wrap gap-1 p-2 border rounded-md min-h-[40px] focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
+        {emails.map((email, index) => (
+          <Badge key={index} variant="secondary" className="flex items-center gap-1">
+            {email}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => removeEmail(email)}
+              className="h-4 w-4 p-0 hover:bg-destructive hover:text-destructive-foreground"
+            >
+              <X className="h-2 w-2" />
+            </Button>
+          </Badge>
+        ))}
+        <Input
+          placeholder={emails.length === 0 ? placeholder : ""}
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          onKeyDown={handleKeyDown}
+          onBlur={handleBlur}
+          className="border-0 shadow-none p-0 h-6 flex-1 min-w-[120px] focus-visible:ring-0"
+        />
+      </div>
+      <p className="text-xs text-muted-foreground">
+        Press Enter or comma to add multiple emails
+      </p>
+    </div>
+  )
+}
+
 export function ComposeDialog({ open, onOpenChange }) {
   const { mailAccounts } = useMail()
   const [formData, setFormData] = useState({
     from: "",
-    to: "",
-    cc: "",
-    bcc: "",
+    to: [],
+    cc: [],
+    bcc: [],
     subject: "",
-    body: "",
+    message: "",
   })
 
   useEffect(() => {
@@ -40,49 +118,73 @@ export function ComposeDialog({ open, onOpenChange }) {
   const [showBcc, setShowBcc] = useState(false)
   const [isAiGenerating, setIsAiGenerating] = useState(false)
 
-  // const emailAccounts = ["john.doe@gmail.com", "work@company.com", "personal@gmail.com"]
   const emailAccounts = mailAccounts.map((account) => account.email)
 
   const handleAiGenerate = async () => {
     setIsAiGenerating(true)
     try {
-      const emailBody = await generateEmailBody(formData.subject)
-      console.log(emailBody)
+      const emailmessage = await generateEmailBody(formData.subject)
+      console.log(emailmessage)
       setFormData((prev) => ({
         ...prev,
-        body: emailBody,
+        message: emailmessage,
       }))
     } catch (e) {
       alert(e)
     } finally {
       setIsAiGenerating(false)
     }
-    // Simulate AI generation
   }
 
-  const handleSend = () => {
-    console.log("Sending email:", formData)
-    onOpenChange(false)
+  const handleSend = async () => {
+    // Validate that at least one recipient is provided
+    if (formData.to.length === 0) {
+      alert("Please add at least one recipient")
+      return
+    }
+
     const fromMailId = mailAccounts.find(account => account.email === formData.from)?.id
     if (!fromMailId) {
       console.error("Selected email account not found")
       return
     }
-    try {
-      response = sendEmail(fromMailId, formData)
-    } catch (e) {
 
+    // Convert arrays to comma-separated strings for submission
+    const submissionData = {
+      to: formData.to.join(','),
+      cc: formData.cc.join(','),
+      bcc: formData.bcc.join(','),
+      subject: formData.subject,
+      message: formData.message,
+      attachments: attachments
     }
-    // Reset form
-    setFormData({
-      from: "john.doe@gmail.com",
-      to: "",
-      cc: "",
-      bcc: "",
-      subject: "",
-      body: "",
-    })
-    setAttachments([])
+
+    console.log("Sending email:", submissionData)
+    console.log("From mail ID:", fromMailId)
+
+    try {
+      const response = await sendEmail(fromMailId, submissionData)
+      console.log("Email sent successfully:", response)
+
+      // Reset form after successful send
+      setFormData({
+        from: emailAccounts[0] || "",
+        to: [],
+        cc: [],
+        bcc: [],
+        subject: "",
+        message: "",
+      })
+      setAttachments([])
+      setShowCc(false)
+      setShowBcc(false)
+
+      // Close dialog
+      onOpenChange(false)
+    } catch (e) {
+      console.error("Send mail error:", e)
+      alert("Failed to send email. Please try again.")
+    }
   }
 
   const handleFileUpload = (event) => {
@@ -122,7 +224,7 @@ export function ComposeDialog({ open, onOpenChange }) {
           {/* To Field */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="to">To</Label>
+              <Label>To</Label>
               <div className="flex gap-2">
                 {!showCc && (
                   <Button variant="ghost" size="sm" onClick={() => setShowCc(true)} className="text-xs">
@@ -136,49 +238,33 @@ export function ComposeDialog({ open, onOpenChange }) {
                 )}
               </div>
             </div>
-            <Input
-              id="to"
+            <EmailInput
+              label=""
               placeholder="recipient@example.com"
-              value={formData.to}
-              onChange={(e) => setFormData((prev) => ({ ...prev, to: e.target.value }))}
+              emails={formData.to}
+              onEmailsChange={(emails) => setFormData(prev => ({ ...prev, to: emails }))}
             />
           </div>
 
           {/* CC Field */}
-          {showCc && (
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="cc">Cc</Label>
-                <Button variant="ghost" size="sm" onClick={() => setShowCc(false)} className="text-xs">
-                  <X className="h-3 w-3" />
-                </Button>
-              </div>
-              <Input
-                id="cc"
-                placeholder="cc@example.com"
-                value={formData.cc}
-                onChange={(e) => setFormData((prev) => ({ ...prev, cc: e.target.value }))}
-              />
-            </div>
-          )}
+          <EmailInput
+            label="Cc"
+            placeholder="cc@example.com"
+            emails={formData.cc}
+            onEmailsChange={(emails) => setFormData(prev => ({ ...prev, cc: emails }))}
+            onToggle={() => setShowCc(false)}
+            showField={showCc}
+          />
 
           {/* BCC Field */}
-          {showBcc && (
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="bcc">Bcc</Label>
-                <Button variant="ghost" size="sm" onClick={() => setShowBcc(false)} className="text-xs">
-                  <X className="h-3 w-3" />
-                </Button>
-              </div>
-              <Input
-                id="bcc"
-                placeholder="bcc@example.com"
-                value={formData.bcc}
-                onChange={(e) => setFormData((prev) => ({ ...prev, bcc: e.target.value }))}
-              />
-            </div>
-          )}
+          <EmailInput
+            label="Bcc"
+            placeholder="bcc@example.com"
+            emails={formData.bcc}
+            onEmailsChange={(emails) => setFormData(prev => ({ ...prev, bcc: emails }))}
+            onToggle={() => setShowBcc(false)}
+            showField={showBcc}
+          />
 
           {/* Subject Field */}
           <div className="space-y-2">
@@ -191,10 +277,10 @@ export function ComposeDialog({ open, onOpenChange }) {
             />
           </div>
 
-          {/* Body Field */}
+          {/* message Field */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="body">Message</Label>
+              <Label htmlFor="message">Message</Label>
               <Button
                 variant="outline"
                 size="sm"
@@ -207,11 +293,11 @@ export function ComposeDialog({ open, onOpenChange }) {
               </Button>
             </div>
             <Textarea
-              id="body"
+              id="message"
               placeholder="Write your message here..."
               className="min-h-[200px]"
-              value={formData.body}
-              onChange={(e) => setFormData((prev) => ({ ...prev, body: e.target.value }))}
+              value={formData.message}
+              onChange={(e) => setFormData((prev) => ({ ...prev, message: e.target.value }))}
             />
           </div>
 

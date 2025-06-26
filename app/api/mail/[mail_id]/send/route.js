@@ -23,9 +23,16 @@ export async function POST(request, { params }) {
         }
 
         const formData = await request.formData()
-        const to = formData.get('to')
-        const cc = formData.get('cc') || ''
-        const bcc = formData.get('bcc') || ''
+        const normalizeEmails = (str) =>
+            str
+                .split(',')
+                .map((email) => email.trim())
+                .filter((email) => !!email)
+                .join(',') // ensures clean formatting for Gmail headers
+
+        const to = normalizeEmails(formData.get('to') || '')
+        const cc = normalizeEmails(formData.get('cc') || '')
+        const bcc = normalizeEmails(formData.get('bcc') || '')
         const subject = formData.get('subject') || '(no subject)'
         const message = formData.get('message') || ''
         const attachments = formData.getAll('attachments') || []
