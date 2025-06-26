@@ -61,9 +61,6 @@ export function AppSidebar() {
               <img src="/icon.svg" alt="Icon" className="w-fit h-fit object-cover" />
             </div>
             <span className="text-lg font-semibold">MailBoard</span>
-            {/* <button className="border" onClick={() => setSample(`sample no. : ${Math.random()}`)}> */}
-            {/* {sample} */}
-            {/* </button> */}
           </div>
         </SidebarHeader>
 

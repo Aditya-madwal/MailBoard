@@ -36,8 +36,7 @@ export async function createCategory(categoryData) {
         const response = await axios.post(`${BASE_URL}/api/category/`, categoryData)
         return response.data
     } catch (err) {
-        console.error("Failed to create category:", err)
-        return null
+        throw new Error("Failed to create category: " + err.message)
     }
 }
 
