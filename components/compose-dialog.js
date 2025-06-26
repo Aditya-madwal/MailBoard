@@ -13,6 +13,7 @@ import { Separator } from "@/components/ui/separator"
 import { useMail } from "@/context/mailContext"
 import { useEffect } from "react"
 import { generateEmailBody } from "@/services/api/mail/index"
+import { sendEmail } from "@/services/api/mail/index"
 
 export function ComposeDialog({ open, onOpenChange }) {
   const { mailAccounts } = useMail()
@@ -61,7 +62,17 @@ export function ComposeDialog({ open, onOpenChange }) {
 
   const handleSend = () => {
     console.log("Sending email:", formData)
-    // onOpenChange(false)
+    onOpenChange(false)
+    const fromMailId = mailAccounts.find(account => account.email === formData.from)?.id
+    if (!fromMailId) {
+      console.error("Selected email account not found")
+      return
+    }
+    try {
+      response = sendEmail(fromMailId, formData)
+    } catch (e) {
+
+    }
     // Reset form
     setFormData({
       from: "john.doe@gmail.com",
