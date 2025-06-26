@@ -26,10 +26,12 @@ import axios from "axios"
 import { fetchEmailAccounts } from "@/services/api/mail/accounts"
 import { getAllCategories } from "@/services/api/category/index"
 import { useMail } from "@/context/mailContext"
+import { SettingsModal } from "@/components/settings-modal"
 
 export function AppSidebar() {
   const [connectDialogOpen, setConnectDialogOpen] = useState(false)
   const [createCategoryDialogOpen, setCreateCategoryDialogOpen] = useState(false)
+  const [settingsOpen, setSettingsOpen] = useState(false)
   const { mailAccounts, setMailAccounts, categories, setCategories, emails, setEmails, labels } = useMail()
 
   const router = useRouter()
@@ -226,10 +228,12 @@ export function AppSidebar() {
 
         <SidebarFooter className="p-4">
           <SidebarMenu>
-            <SidebarMenuItem>
+            <SidebarMenuItem className="hover:bg-accent hover:text-accent-foreground transition-colors flex items-center gap-2 rounded-lg">
               <SidebarMenuButton>
                 <Settings className="h-4 w-4" />
-                <span>Settings</span>
+                <button onClick={() => setSettingsOpen(true)}>
+                  <span>Settings</span>
+                </button>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
@@ -245,6 +249,7 @@ export function AppSidebar() {
 
       <ConnectEmailDialog open={connectDialogOpen} onOpenChange={setConnectDialogOpen} />
       <CreateCategoryDialog open={createCategoryDialogOpen} onOpenChange={setCreateCategoryDialogOpen} />
+      <SettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
     </>
   )
 }
