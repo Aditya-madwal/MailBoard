@@ -119,9 +119,9 @@ const emails = [
     }
 ]
 
-const categories = ['personal', 'spam', 'college', 'work', 'offers', 'promotions', 'social', 'finance']
+// const categories = ['personal', 'spam', 'college', 'work', 'offers', 'promotions', 'social', 'finance']
 
-// Test the function
-categorizeEmails(emails, categories).then(results => {
-    console.log("Predicted Categories:", results)
-})
+// // Test the function
+// categorizeEmails(emails, categories).then(results => {
+//     console.log("Predicted Categories:", results)
+// })

@@ -15,16 +15,9 @@ export async function GET(request) {
 
         const userId = authResult.user.userId
 
-        await InboxMail.updateMany({ user: userId }, { UserCategory: null })
-
         const mails = await InboxMail.find({ user: userId })
-            .populate('UserCategory')
             .sort({ date: -1 })
             .lean()
-
-        // console.log(mails.length)
-        // console.log(mails[0].UserCategory)
-        // console.log(mails[0]._id)
 
         return NextResponse.json(mails, { status: 200 })
     } catch (error) {

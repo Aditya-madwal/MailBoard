@@ -50,6 +50,7 @@ export function AppSidebar() {
 
   useEffect(() => {
     console.log(categories)
+    // console.log("ALL EMAILS ", emails)
   }, [categories])
 
   return (
@@ -122,7 +123,7 @@ export function AppSidebar() {
                       <div className={`h-3 w-3 rounded-full ${category.color}`} />
                       <span>{category.name}</span>
                       <Badge variant="secondary" className="ml-auto">
-                        {category.count}
+                        {emails?.filter((e) => e.UserCategory === category._id).length}
                       </Badge>
                     </SidebarMenuButton>
                   </SidebarMenuItem>

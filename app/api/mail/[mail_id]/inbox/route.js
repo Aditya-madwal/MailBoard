@@ -7,6 +7,10 @@ import { validateAuth } from '@/lib/auth'
 import { NextResponse } from 'next/server'
 import { getValidOAuthClient } from '@/services/mail/getValidOAuthClient'
 import InboxMail from '@/models/InboxMail'
+// import categorizeEmails from '@services/ai/emailCategorizer'
+import { categorizeEmails } from '@/services/ai/emailCategorizer'
+import UserCategory from '@/models/UserCategory'
+
 
 export async function GET(request, { params }) {
     try {
@@ -33,18 +37,18 @@ export async function GET(request, { params }) {
 
         const allMailsRes = await gmail.users.messages.list({
             userId: 'me',
-            maxResults: 50, // Increased since we're fetching all mails
+            maxResults: 50,
         })
 
         const messageIds = allMailsRes.data.messages || []
 
+        // Step 1: Fetch and save all emails to database first
         const detailedMessages = await Promise.all(
             messageIds.map(async (msg) => {
-                // Fetch full message details instead of just metadata
                 const detail = await gmail.users.messages.get({
                     userId: 'me',
                     id: msg.id,
-                    format: 'full', // Changed from 'metadata' to 'full'
+                    format: 'full',
                 })
 
                 const payload = detail.data.payload || {}
@@ -63,7 +67,6 @@ export async function GET(request, { params }) {
 
                 let senderPicture = null
                 try {
-                    // Use People API to try fetching contact info
                     const contact = await people.people.searchContacts({
                         query: senderEmail,
                         readMask: 'photos',
@@ -74,7 +77,7 @@ export async function GET(request, { params }) {
                         senderPicture = contact.data.results[0].person.photos[0].url
                     }
                 } catch (err) {
-                    // console.log(`couldn't fetch contact photo for: ${senderName}`)
+                    // Silently handle contact photo fetch errors
                 }
 
                 // Extract attachments
@@ -96,15 +99,13 @@ export async function GET(request, { params }) {
                 }
                 findAttachments(parts)
 
-                // Extract body content - handle nested multipart structure
+                // Extract body content
                 const extractBodyFromParts = (partList) => {
                     for (const part of partList) {
-                        // If this part has nested parts, recurse
                         if (part.parts && part.parts.length > 0) {
                             const nestedBody = extractBodyFromParts(part.parts)
                             if (nestedBody) return nestedBody
                         }
-                        // Check if this part contains body content
                         else if (part.body?.data && (part.mimeType === 'text/plain' || part.mimeType === 'text/html')) {
                             return part.body.data
                         }
@@ -113,26 +114,21 @@ export async function GET(request, { params }) {
                 }
 
                 let encodedBody = ''
-
-                // Try to extract body from parts first
                 if (parts.length > 0) {
                     encodedBody = extractBodyFromParts(parts) || ''
                 }
-
-                // Fallback to payload body if no parts or no body found in parts
                 if (!encodedBody && payload.body?.data) {
                     encodedBody = payload.body.data
                 }
 
                 const decodedBody = encodedBody ? Buffer.from(encodedBody, 'base64').toString('utf-8') : ''
-
                 const isUnread = detail.data.labelIds?.includes('UNREAD')
                 const dateStr = date || ''
                 const parsedDate = new Date(dateStr)
 
                 // Categorize Gmail category
                 const labelIds = detail.data.labelIds || []
-                let gmailCategory = 'primary' // Default fallback
+                let gmailCategory = 'primary'
 
                 if (labelIds.includes('CATEGORY_PROMOTIONS')) {
                     gmailCategory = 'promotions'
@@ -144,13 +140,12 @@ export async function GET(request, { params }) {
                     gmailCategory = 'forums'
                 }
 
-                // Convert CC and BCC to arrays
                 const parseEmailList = (str) => str ? str.split(',').map(e => e.trim()) : []
                 const ccList = parseEmailList(cc)
                 const bccList = parseEmailList(bcc)
 
-                // Save complete message details to database
-                await InboxMail.findOneAndUpdate(
+                // Save to database with UserCategory initially null
+                const savedMail = await InboxMail.findOneAndUpdate(
                     { messageId: detail.data.id },
                     {
                         gmailAccount: gmailAccount._id,
@@ -171,13 +166,12 @@ export async function GET(request, { params }) {
                         isUnread,
                         labelIds,
                         gmailCategory,
-                        UserCategory: null,
+                        UserCategory: null, // Will be updated by AI
                         user: authResult.user.userId
                     },
                     { upsert: true, new: true }
                 )
 
-                // Return complete message data for frontend
                 return {
                     id: detail.data.id,
                     threadId: detail.data.threadId,
@@ -196,12 +190,66 @@ export async function GET(request, { params }) {
                     isUnread,
                     labelIds,
                     gmailCategory,
-                    user: authResult.user.userId
+                    user: authResult.user.userId,
+                    _id: savedMail._id // Include database ID for later updates
                 }
             })
         )
 
-        return NextResponse.json(detailedMessages)
+        // Step 2: Prepare data for AI categorization (without body content)
+        const emailsForAI = detailedMessages
+            .filter(msg => msg.UserCategory == null)
+            .map(msg => ({
+                id: msg.id,
+                snippet: msg.snippet,
+                subject: msg.subject,
+                senderName: msg.senderName,
+                senderEmail: msg.senderEmail,
+                gmailCategory: msg.gmailCategory
+            }))
+
+        // Step 3: Run AI categorization
+        const userCategoriesObj = await UserCategory.find({ user: authResult.user.userId })
+        const userCategories = userCategoriesObj.map(cat => cat.name)
+
+        if (!userCategories || userCategories.length === 0) {
+            console.warn('No user categories found, skipping AI categorization')
+        } else {
+            try {
+                console.log('Running AI categorization for', emailsForAI.length, 'emails...')
+                const predictedCategories = await categorizeEmails(emailsForAI, userCategories)
+
+                // Step 4: Update database with predicted categories
+                const updatePromises = detailedMessages.map(async (msg, index) => {
+                    const predictedCategory = predictedCategories[index] || null
+
+                    await InboxMail.findOneAndUpdate(
+                        { messageId: msg.id },
+                        { UserCategory: userCategoriesObj.find(cat => cat.name.toLowerCase() === predictedCategory.toLowerCase())?.id || null },
+                        { new: true }
+                    )
+
+                    // Add predicted category to response
+                    msg.UserCategory = userCategoriesObj.find(cat => cat.name.toLowerCase() === predictedCategory.toLowerCase())?.id || null
+                    return msg
+                })
+
+                const updatedMessages = await Promise.all(updatePromises)
+                console.log('AI categorization completed successfully')
+
+                return NextResponse.json(updatedMessages)
+
+            } catch (aiError) {
+                console.error('AI categorization failed:', aiError)
+                // Return messages without AI categories if AI fails
+                const messagesWithFallback = detailedMessages.map(msg => ({
+                    ...msg,
+                    UserCategory: null
+                }))
+
+                return NextResponse.json(messagesWithFallback)
+            }
+        }
     } catch (err) {
         console.error('All mails fetch error:', err)
         return NextResponse.json({ error: 'Failed to fetch all mails' }, { status: 500 })
