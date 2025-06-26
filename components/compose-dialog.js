@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
+import toast from "react-hot-toast"
 import { useMail } from "@/context/mailContext"
 import { useEffect } from "react"
 import { generateEmailBody } from "@/services/api/mail/index"
@@ -117,6 +118,7 @@ export function ComposeDialog({ open, onOpenChange }) {
   const [showCc, setShowCc] = useState(false)
   const [showBcc, setShowBcc] = useState(false)
   const [isAiGenerating, setIsAiGenerating] = useState(false)
+  const [isSending, setIsSending] = useState(false)
 
   const emailAccounts = mailAccounts.map((account) => account.email)
 
@@ -130,24 +132,41 @@ export function ComposeDialog({ open, onOpenChange }) {
         message: emailmessage,
       }))
     } catch (e) {
-      alert(e)
+      console.error("AI generation error:", e)
+      toast.error("Failed to generate email content. Please try again.")
     } finally {
       setIsAiGenerating(false)
     }
   }
 
+  const resetForm = () => {
+    setFormData({
+      from: emailAccounts[0] || "",
+      to: [],
+      cc: [],
+      bcc: [],
+      subject: "",
+      message: "",
+    })
+    setAttachments([])
+    setShowCc(false)
+    setShowBcc(false)
+  }
+
   const handleSend = async () => {
     // Validate that at least one recipient is provided
     if (formData.to.length === 0) {
-      alert("Please add at least one recipient")
+      toast.error("Please add at least one recipient to send the email.")
       return
     }
 
     const fromMailId = mailAccounts.find(account => account.email === formData.from)?.id
     if (!fromMailId) {
-      console.error("Selected email account not found")
+      toast.error("Selected email account not found. Please select a valid account.")
       return
     }
+
+    setIsSending(true)
 
     // Convert arrays to comma-separated strings for submission
     const submissionData = {
@@ -164,26 +183,27 @@ export function ComposeDialog({ open, onOpenChange }) {
 
     try {
       const response = await sendEmail(fromMailId, submissionData)
-      console.log("Email sent successfully:", response)
+      if (!response || !response.success) {
+        toast.success(`Email sent successfully to!`)
+      }
 
       // Reset form after successful send
-      setFormData({
-        from: emailAccounts[0] || "",
-        to: [],
-        cc: [],
-        bcc: [],
-        subject: "",
-        message: "",
-      })
-      setAttachments([])
-      setShowCc(false)
-      setShowBcc(false)
+      resetForm()
 
-      // Close dialog
-      onOpenChange(false)
-    } catch (e) {
-      console.error("Send mail error:", e)
-      alert("Failed to send email. Please try again.")
+      // Close dialog after a short delay to show the toast
+      setTimeout(() => {
+        onOpenChange(false)
+      }, 1500)
+
+    } catch (error) {
+      console.error("Send mail error:", error)
+
+      // Show error toast with more specific error message if available
+      const errorMessage = error?.message || error?.toString() || "An unexpected error occurred while sending the email."
+
+      toast.error(`Failed to send email: ${errorMessage}`)
+    } finally {
+      setIsSending(false)
     }
   }
 
@@ -352,10 +372,11 @@ export function ComposeDialog({ open, onOpenChange }) {
               </Button>
               <Button
                 onClick={handleSend}
+                disabled={isSending}
                 className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
               >
                 <Send className="h-4 w-4 mr-2" />
-                Send
+                {isSending ? "Sending..." : "Send"}
               </Button>
             </div>
           </div>

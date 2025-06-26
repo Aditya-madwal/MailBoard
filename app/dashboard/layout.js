@@ -42,23 +42,19 @@ export default function DashboardLayout({ children }) {
 
     if (isLoading || !user) {
         return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center w-screen">
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
-                    <p className="text-gray-600">Loading...</p>
+            <div className="min-h-screen bg-black flex items-center justify-center w-screen">
+                <div className="h-full w-full flex items-center justify-center">
+                    {/* Minimal spinner: just a spinning border */}
+                    <div className="animate-spin rounded-full h-6 w-6 border-2 border-muted-foreground border-t-transparent" />
                 </div>
             </div>
         )
     }
 
     return (
-        <html lang="en">
-            <body className={inter.className}>
-                <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
-                    <SidebarProvider>{children}</SidebarProvider>
-                </ThemeProvider>
-            </body>
-        </html>
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
+            <SidebarProvider>{children}</SidebarProvider>
+        </ThemeProvider>
     )
 }
 

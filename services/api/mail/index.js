@@ -1,4 +1,5 @@
 import axios from 'axios'
+import toast from "react-hot-toast"
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL
 
@@ -92,6 +93,7 @@ export async function sendEmail(accountId, emailData) {
         const response = await axios.post(`${BASE_URL}/api/mail/${accountId}/send/`, formData)
         return response.data
     } catch (err) {
+        toast.error(`Failed to send email: `)
         console.error("Failed to send email:", err)
         return null
     }
@@ -122,6 +124,7 @@ export async function generateEmailBody(subject) {
         return response.data.data
     } catch (err) {
         console.error("Failed to generate email body:", err)
+        toast.error("Failed to generate email content. Please try again.")
         return null
     }
 }
