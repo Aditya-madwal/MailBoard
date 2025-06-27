@@ -39,7 +39,7 @@ export async function GET(request) {
         }
         const userId = authResult.user.userId
 
-        const tasks = await Task.find({ createdBy: userId })
+        const tasks = await Task.find({ createdBy: userId }).sort({ createdAt: -1 })
         return NextResponse.json(tasks)
     } catch (err) {
         console.error('Fetching tasks error:', err)

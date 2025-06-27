@@ -1,100 +1,22 @@
 "use client"
 
-import { useState } from "react"
-import { Plus, Calendar, Link, Clock, User, MoreHorizontal } from "lucide-react"
+import { useEffect, useState } from "react"
+import { Plus, Calendar, Link, Clock, User, MoreHorizontal, Eye } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { AddTaskDialog } from "@/components/add-task-dialog"
+import { useMail } from "@/context/mailContext"
+import { getAllTasks } from "@/services/api/todo"
 
 const columns = [
-  { id: "todo", title: "To Do", color: "border-gray-500" },
-  { id: "progress", title: "In Progress", color: "border-blue-500" },
-  { id: "review", title: "Review", color: "border-yellow-500" },
-  { id: "done", title: "Done", color: "border-green-500" },
-]
-
-const todos = [
-  {
-    id: 1,
-    title: "Review Q4 Marketing Campaign",
-    description: "Analyze campaign metrics and prepare feedback",
-    status: "todo",
-    priority: "high",
-    dueDate: "2024-01-15",
-    avatar: "/placeholder.svg?height=24&width=24",
-    tags: ["Marketing", "Review"],
-    emailSource: true,
-    links: ["https://analytics.google.com/campaign-123"],
-    createdAt: "2024-01-10T10:30:00Z",
-  },
-  {
-    id: 2,
-    title: "Update Security Protocols",
-    description: "Review and update company security guidelines",
-    status: "progress",
-    priority: "medium",
-    dueDate: "2024-01-20",
-    avatar: "/placeholder.svg?height=24&width=24",
-    tags: ["Security", "Documentation"],
-    emailSource: true,
-    links: ["https://github.com/company/security-docs"],
-    createdAt: "2024-01-08T14:15:00Z",
-  },
-  {
-    id: 3,
-    title: "Process Monthly Statements",
-    description: "Review and categorize December expenses",
-    status: "review",
-    priority: "low",
-    dueDate: "2024-01-12",
-    avatar: "/placeholder.svg?height=24&width=24",
-    tags: ["Finance", "Monthly"],
-    emailSource: true,
-    links: [],
-    createdAt: "2024-01-09T09:00:00Z",
-  },
-  {
-    id: 4,
-    title: "Setup New Development Environment",
-    description: "Configure development tools and dependencies",
-    status: "done",
-    priority: "medium",
-    dueDate: "2024-01-10",
-    avatar: "/placeholder.svg?height=24&width=24",
-    tags: ["Development", "Setup"],
-    emailSource: false,
-    links: ["https://github.com/company/dev-setup"],
-    createdAt: "2024-01-05T16:45:00Z",
-  },
-  {
-    id: 5,
-    title: "Review Q4 Marketing Campaign",
-    description: "Analyze campaign metrics and prepare feedback",
-    status: "todo",
-    priority: "high",
-    dueDate: "2024-01-15",
-    avatar: "/placeholder.svg?height=24&width=24",
-    tags: ["Marketing", "Review"],
-    emailSource: true,
-    links: ["https://analytics.google.com/campaign-123"],
-    createdAt: "2024-01-10T10:30:00Z",
-  },
-  {
-    id: 6,
-    title: "Review Q4 Marketing Campaign",
-    description: "Analyze campaign metrics and prepare feedback",
-    status: "todo",
-    priority: "high",
-    dueDate: "2024-01-15",
-    avatar: "/placeholder.svg?height=24&width=24",
-    tags: ["Marketing", "Review"],
-    emailSource: true,
-    links: ["https://analytics.google.com/campaign-123"],
-    createdAt: "2024-01-10T10:30:00Z",
-  },
+  { id: "To Do", title: "To Do", color: "border-gray-500" },
+  { id: "In Progress", title: "In Progress", color: "border-blue-500" },
+  { id: "Review", title: "Review", color: "border-yellow-500" },
+  { id: "Done", title: "Done", color: "border-green-500" },
 ]
 
 const priorityColors = {
@@ -104,8 +26,26 @@ const priorityColors = {
 }
 
 export function TodoKanban() {
-  const [hoveredTodo, setHoveredTodo] = useState(null)
+  const [selectedTodo, setSelectedTodo] = useState(null)
   const [addTaskOpen, setAddTaskOpen] = useState(false)
+  const [detailDialogOpen, setDetailDialogOpen] = useState(false)
+  const { tasks, setTasks } = useMail();
+
+  const fetchTasks = async () => {
+    console.log("fetchTasks")
+    const tasks = await getAllTasks();
+    setTasks(tasks);
+    console.log(tasks)
+  }
+
+  useEffect(() => {
+    fetchTasks()
+  }, [])
+
+  const handleReadMore = (todo) => {
+    setSelectedTodo(todo)
+    setDetailDialogOpen(true)
+  }
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -143,20 +83,18 @@ export function TodoKanban() {
               <div className={`border-t-4 ${column.color} bg-card rounded-t-lg p-4 flex-shrink-0`}>
                 <div className="flex items-center justify-between">
                   <h3 className="font-semibold">{column.title}</h3>
-                  <Badge variant="secondary">{todos.filter((todo) => todo.status === column.id).length}</Badge>
+                  <Badge variant="secondary">{tasks.filter((todo) => todo.status === column.id).length}</Badge>
                 </div>
               </div>
 
               <div className="flex-1 bg-muted/20 rounded-b-lg p-2 overflow-y-auto min-h-0">
                 <div className="space-y-3">
-                  {todos
+                  {tasks
                     .filter((todo) => todo.status === column.id)
                     .map((todo) => (
                       <Card
                         key={todo.id}
-                        className="cursor-pointer transition-all duration-300 hover:shadow-md relative overflow-hidden"
-                        onMouseEnter={() => setHoveredTodo(todo.id)}
-                        onMouseLeave={() => setHoveredTodo(null)}
+                        className="transition-all duration-200 hover:shadow-md"
                       >
                         <CardHeader className="pb-2">
                           <div className="flex items-start justify-between">
@@ -177,7 +115,7 @@ export function TodoKanban() {
                         </CardHeader>
 
                         <CardContent className="pt-0">
-                          <p className="text-xs text-muted-foreground mb-3 line-clamp-2">{todo.description}</p>
+                          <p className="text-xs text-muted-foreground mb-3">{todo.description}</p>
 
                           <div className="flex flex-wrap gap-1 mb-3">
                             {todo.tags.map((tag) => (
@@ -185,62 +123,21 @@ export function TodoKanban() {
                                 {tag}
                               </Badge>
                             ))}
-                            {todo.emailSource && (
-                              <Badge variant="outline" className="text-xs">
-                                📧 Email
-                              </Badge>
-                            )}
                           </div>
 
                           <div className="flex items-center justify-between text-xs">
                             <div className="flex items-center gap-2">
-                              <Badge className={`text-xs ${priorityColors[todo.priority]}`}>{todo.priority}</Badge>
+                              <Badge className={`text-xs ${priorityColors[todo.priority.toLowerCase()]}`}>{todo.priority}</Badge>
                             </div>
-                            <div className="flex items-center gap-1 text-muted-foreground">
-                              <Calendar className="h-3 w-3" />
-                              {formatDate(todo.dueDate)}
-                            </div>
-                          </div>
-
-                          {/* Expanded details with smooth transition */}
-                          <div
-                            className={`transition-all duration-400 ease-in-out overflow-hidden ${hoveredTodo === todo.id
-                              ? 'max-h-48 opacity-100 mt-4'
-                              : 'max-h-0 opacity-0 mt-0'
-                              }`}
-                          >
-                            <div className="p-3 bg-popover border rounded-lg shadow-lg">
-                              <div className="space-y-2 text-xs">
-
-                                <div className="flex items-center gap-2 transform transition-transform duration-300 delay-75">
-                                  <Clock className="h-3 w-3" />
-                                  <span>Created: {formatDateTime(todo.createdAt)}</span>
-                                </div>
-                                <div className="flex items-center gap-2 transform transition-transform duration-300 delay-100">
-                                  <Calendar className="h-3 w-3" />
-                                  <span>Due: {formatDateTime(todo.dueDate)}</span>
-                                </div>
-                                {todo.links.length > 0 && (
-                                  <div className="space-y-1 transform transition-transform duration-300 delay-150">
-                                    <div className="flex items-center gap-2">
-                                      <Link className="h-3 w-3" />
-                                      <span>Links:</span>
-                                    </div>
-                                    {todo.links.map((link, index) => (
-                                      <a
-                                        key={index}
-                                        href={link}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="block text-blue-600 hover:underline truncate ml-5"
-                                      >
-                                        {link}
-                                      </a>
-                                    ))}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 text-xs text-muted-foreground hover:text-foreground"
+                              onClick={() => handleReadMore(todo)}
+                            >
+                              <Eye className="h-3 w-3" />
+                              Read more
+                            </Button>
                           </div>
                         </CardContent>
                       </Card>
@@ -251,6 +148,89 @@ export function TodoKanban() {
           ))}
         </div>
       </div>
+
+      {/* Task Detail Dialog */}
+      <Dialog open={detailDialogOpen} onOpenChange={setDetailDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl">{selectedTodo?.title}</DialogTitle>
+          </DialogHeader>
+
+          {selectedTodo && (
+            <div className="space-y-6">
+              <div>
+                <h3 className="font-semibold mb-2">Description</h3>
+                <p className="text-sm text-muted-foreground">{selectedTodo.description}</p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <h3 className="font-semibold mb-2">Priority</h3>
+                  <Badge className={priorityColors[selectedTodo.priority.toLowerCase()]}>
+                    {selectedTodo.priority}
+                  </Badge>
+                </div>
+
+                <div>
+                  <h3 className="font-semibold mb-2">Status</h3>
+                  <Badge variant="outline">{selectedTodo.status}</Badge>
+                </div>
+
+                <div>
+                  <h3 className="font-semibold mb-2">Due Date</h3>
+                  <div className="flex items-center gap-2 text-sm">
+                    <Calendar className="h-4 w-4" />
+                    {selectedTodo.dueDate ? formatDate(selectedTodo.dueDate) : 'N/A'}
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="font-semibold mb-2">Created</h3>
+                  <div className="flex items-center gap-2 text-sm">
+                    <Clock className="h-4 w-4" />
+                    {formatDateTime(selectedTodo.createdAt)}
+                  </div>
+                </div>
+              </div>
+
+              {selectedTodo.tags?.length > 0 && (
+                <div>
+                  <h3 className="font-semibold mb-2">Tags</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedTodo.tags.map((tag) => (
+                      <Badge key={tag} variant="outline">
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {selectedTodo.relatedLinks?.length > 0 && (
+                <div>
+                  <h3 className="font-semibold mb-2">Related Links</h3>
+                  <div className="space-y-2">
+                    {selectedTodo.relatedLinks.map((link, index) => (
+                      <div key={index} className="flex items-center gap-2">
+                        <Link className="h-4 w-4" />
+                        <a
+                          href={link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:underline text-sm break-all"
+                        >
+                          {link}
+                        </a>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
       <AddTaskDialog open={addTaskOpen} onOpenChange={setAddTaskOpen} />
     </div>
   )

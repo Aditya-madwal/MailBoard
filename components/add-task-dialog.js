@@ -10,58 +10,53 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { createTask } from "@/services/api/todo"
+import { useMail } from "@/context/mailContext"
 
 const priorities = [
-  { value: "low", label: "Low", color: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" },
-  { value: "medium", label: "Medium", color: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200" },
-  { value: "high", label: "High", color: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200" },
+  { value: "Low", label: "Low", color: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" },
+  { value: "Medium", label: "Medium", color: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200" },
+  { value: "High", label: "High", color: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200" },
 ]
 
 const statuses = [
-  { value: "todo", label: "To Do" },
-  { value: "progress", label: "In Progress" },
-  { value: "review", label: "Review" },
-  { value: "done", label: "Done" },
-]
-
-const assignees = [
-  { id: 1, name: "John Doe", email: "john.doe@gmail.com", avatar: "/placeholder.svg?height=32&width=32" },
-  { id: 2, name: "Sarah Wilson", email: "sarah.wilson@company.com", avatar: "/placeholder.svg?height=32&width=32" },
-  { id: 3, name: "Finance Team", email: "finance@company.com", avatar: "/placeholder.svg?height=32&width=32" },
-  { id: 4, name: "Dev Team", email: "dev@company.com", avatar: "/placeholder.svg?height=32&width=32" },
+  { value: "To Do", label: "To Do" },
+  { value: "In Progress", label: "In Progress" },
+  { value: "Review", label: "Review" },
+  { value: "Done", label: "Done" },
 ]
 
 const predefinedTags = ["Work", "Personal", "Finance", "Marketing", "Development", "Review", "Urgent", "Meeting"]
 
 export function AddTaskDialog({ open, onOpenChange }) {
+  const { tasks, setTasks } = useMail()
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     status: "todo",
     priority: "medium",
-    assignee: "",
     dueDate: "",
     tags: [],
-    links: [],
+    relatedLinks: [],
   })
   const [newTag, setNewTag] = useState("")
   const [newLink, setNewLink] = useState("")
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     console.log("Creating task:", formData)
+    const newtask = await createTask(formData)
+    console.log(newtask)
+    setTasks([...tasks, newtask])
     onOpenChange(false)
-    // Reset form
     setFormData({
       title: "",
       description: "",
       status: "todo",
       priority: "medium",
-      assignee: "",
       dueDate: "",
       tags: [],
-      links: [],
+      relatedLinks: [],
     })
   }
 
@@ -77,17 +72,15 @@ export function AddTaskDialog({ open, onOpenChange }) {
   }
 
   const addLink = () => {
-    if (newLink && !formData.links.includes(newLink)) {
-      setFormData((prev) => ({ ...prev, links: [...prev.links, newLink] }))
+    if (newLink && !formData.relatedLinks.includes(newLink)) {
+      setFormData((prev) => ({ ...prev, relatedLinks: [...prev.relatedLinks, newLink] }))
     }
     setNewLink("")
   }
 
   const removeLink = (linkToRemove) => {
-    setFormData((prev) => ({ ...prev, links: prev.links.filter((link) => link !== linkToRemove) }))
+    setFormData((prev) => ({ ...prev, relatedLinks: prev.relatedLinks.filter((link) => link !== linkToRemove) }))
   }
-
-  const selectedAssignee = assignees.find((a) => a.id.toString() === formData.assignee)
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -166,7 +159,7 @@ export function AddTaskDialog({ open, onOpenChange }) {
 
           {/* Assignee and Due Date */}
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
+            {/* <div className="space-y-2">
               <Label>Assignee</Label>
               <Select
                 value={formData.assignee}
@@ -212,7 +205,7 @@ export function AddTaskDialog({ open, onOpenChange }) {
                   ))}
                 </SelectContent>
               </Select>
-            </div>
+            </div> */}
 
             <div className="space-y-2">
               <Label htmlFor="dueDate">Due Date</Label>
@@ -277,11 +270,11 @@ export function AddTaskDialog({ open, onOpenChange }) {
             </div>
           </div>
 
-          {/* Links */}
+          {/* relatedLinks */}
           <div className="space-y-2">
-            <Label>Related Links</Label>
+            <Label>Related relatedLinks</Label>
             <div className="space-y-2">
-              {formData.links.map((link, index) => (
+              {formData.relatedLinks.map((link, index) => (
                 <div key={index} className="flex items-center gap-2 p-2 bg-muted/20 rounded">
                   <Link className="h-4 w-4 text-muted-foreground" />
                   <a
