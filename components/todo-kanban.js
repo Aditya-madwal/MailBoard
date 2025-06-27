@@ -40,7 +40,7 @@ export function TodoKanban() {
 
   useEffect(() => {
     fetchTasks()
-  }, [])
+  }, [tasks])
 
   const handleReadMore = (todo) => {
     setSelectedTodo(todo)

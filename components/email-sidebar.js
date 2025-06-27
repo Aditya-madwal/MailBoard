@@ -10,7 +10,7 @@ import { EmailDetailModal } from "@/components/email-detail-modal"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useMail } from "@/context/mailContext"
 import { getAllEmails, getInboxEmails, markEmailAsRead, changeEmailCategory } from "@/services/api/mail/index"
-import axios from "axios"
+import { convertMailToTask } from "@/services/api/todo"
 
 export function EmailSidebar() {
   const [selectedEmail, setSelectedEmail] = useState(null)
@@ -18,7 +18,8 @@ export function EmailSidebar() {
   const [selectedEmailForDetail, setSelectedEmailForDetail] = useState(null)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [changingCategoryForEmail, setChangingCategoryForEmail] = useState(null) // Track which email is changing category
-  const { emails, setEmails, categories, mailAccounts } = useMail()
+  const [convertingToTaskForEmail, setConvertingToTaskForEmail] = useState(null) // Track which email is being converted to task
+  const { emails, setEmails, categories, mailAccounts, tasks, setTasks } = useMail()
 
   // Get URL parameters for filtering
   const searchParams = useSearchParams()
@@ -101,8 +102,21 @@ export function EmailSidebar() {
     fetchMails()
   }, [])
 
-  const createTodo = (email) => {
-    console.log("Creating todo from email:", email?.subject)
+  const createTodo = async (email) => {
+    // Set loading state for this specific email
+    setConvertingToTaskForEmail(email?.messageId)
+
+    try {
+      console.log("Creating todo from email:", email?.subject)
+      const newTask = await convertMailToTask(email?.gmailAccount, email?.messageId)
+      console.log(`✅ Email ${email?.messageId} converted to task successfully`)
+      setTasks([...tasks, newTask])
+    } catch (err) {
+      console.error(`❌ Failed to convert email ${email?.messageId} to task:`, err)
+    } finally {
+      // Clear loading state
+      setConvertingToTaskForEmail(null)
+    }
   }
 
   const changeCategory = async (account_id, emailId, newCategoryId) => {
@@ -246,6 +260,7 @@ export function EmailSidebar() {
             {filteredEmails?.map((email) => {
               const category = getCategoryDetails(email?.UserCategory)
               const isChangingCategory = changingCategoryForEmail === email?.messageId
+              const isConvertingToTask = convertingToTaskForEmail === email?.messageId
 
               const getInitials = (name) => {
                 if (!name) return "";
@@ -339,10 +354,15 @@ export function EmailSidebar() {
                             e.stopPropagation()
                             createTodo(email)
                           }}
+                          disabled={isConvertingToTask}
                           className="h-6 px-2 text-xs"
                         >
-                          <CheckSquare className="h-3 w-3 mr-1" />
-                          Todo
+                          {isConvertingToTask ? (
+                            <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                          ) : (
+                            <CheckSquare className="h-3 w-3 mr-1" />
+                          )}
+                          {isConvertingToTask ? "Converting..." : "Todo"}
                         </Button>
                       </div>
                     </div>
