@@ -34,7 +34,6 @@ export async function POST(request, { params }) {
         const newTask = new Task({
             ...taskPayload,
             createdBy: userId,
-            UserCategory: mail.UserCategory || null,
         })
 
         await newTask.save()

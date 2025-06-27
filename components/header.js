@@ -6,10 +6,40 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Badge } from "@/components/ui/badge"
 import { ComposeDialog } from "@/components/compose-dialog"
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { useMail } from "@/context/mailContext"
+import { useRouter, useSearchParams, usePathname } from "next/navigation"
 
 export function Header() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const pathname = usePathname()
+
   const [composeOpen, setComposeOpen] = useState(false)
+  const { emails } = useMail()
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '')
+
+  const updateUrlParams = (newSearch) => {
+    const params = new URLSearchParams(searchParams.toString())
+
+    // Handle search parameter
+    if (newSearch === null || newSearch === '') {
+      params.delete('search')
+    } else {
+      params.set('search', newSearch)
+    }
+
+    // Navigate to updated URL
+    const queryString = params.toString()
+    const newUrl = queryString ? `${pathname}?${queryString}` : pathname
+    router.push(newUrl)
+  }
+
+  useEffect(() => {
+    if (searchQuery === '') {
+      updateUrlParams(null)
+    }
+  }, [searchQuery])
 
   return (
     <>
@@ -17,10 +47,15 @@ export function Header() {
         <SidebarTrigger className="-ml-1" />
 
         <div className="flex flex-1 items-center gap-4">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input placeholder="Search emails, todos, or contacts..." className="pl-10" />
-          </div>
+          <form className="relative flex-1 max-w-md" onSubmit={(e) => {
+            e.preventDefault()
+            updateUrlParams(searchQuery)
+          }}>
+            <button className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+              <Search className="h-4 w-4" />
+            </button>
+            <Input placeholder="Search..." className="pl-10" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+          </form>
 
           <Button
             onClick={() => setComposeOpen(true)}
@@ -42,7 +77,7 @@ export function Header() {
             <AvatarFallback>JD</AvatarFallback>
           </Avatar>
         </div>
-      </header>
+      </header >
 
       <ComposeDialog open={composeOpen} onOpenChange={setComposeOpen} />
     </>

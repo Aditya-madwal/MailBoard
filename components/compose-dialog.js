@@ -373,9 +373,9 @@ export function ComposeDialog({ open, onOpenChange }) {
               <Button
                 onClick={handleSend}
                 disabled={isSending}
-                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
               >
-                <Send className="h-4 w-4 mr-2" />
+                <Send className="h-4 w-4 mr-1" />
                 {isSending ? "Sending..." : "Send"}
               </Button>
             </div>

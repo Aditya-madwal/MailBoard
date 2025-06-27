@@ -24,6 +24,7 @@ export function EmailSidebar() {
   const searchParams = useSearchParams()
   const categoryParam = searchParams.get('category')
   const labelParam = searchParams.get('label')
+  const searchQuery = searchParams.get('search')
 
   // Filter emails based on URL parameters
   const filteredEmails = useMemo(() => {
@@ -72,8 +73,18 @@ export function EmailSidebar() {
       }
     }
 
+    if (searchQuery) {
+      const queryLower = searchQuery.toLowerCase()
+      filtered = filtered.filter(email =>
+        email.subject.toLowerCase().includes(queryLower) ||
+        email.body.toLowerCase().includes(queryLower) ||
+        email.from.toLowerCase().includes(queryLower)
+      )
+    }
+
     return filtered
-  }, [emails, categories, categoryParam, labelParam])
+  }, [emails, categories, categoryParam, labelParam, searchQuery])
+
 
   const fetchMails = async () => {
     try {
@@ -100,7 +111,6 @@ export function EmailSidebar() {
 
     try {
       await changeEmailCategory(account_id, emailId, newCategoryId)
-      console.log("hogya bc")
       await fetchMails() // Refresh emails after changing category
       console.log(`✅ Email ${emailId} category updated to ${newCategoryId}`)
     } catch (err) {
