@@ -33,14 +33,14 @@ export function TodoKanban() {
 
   const fetchTasks = async () => {
     console.log("fetchTasks")
-    const tasks = await getAllTasks();
-    setTasks(tasks);
-    console.log(tasks)
+    const fetchedTasks = await getAllTasks();
+    setTasks(fetchedTasks);
+    // console.log(tasks)
   }
 
   useEffect(() => {
     fetchTasks()
-  }, [tasks])
+  }, [])
 
   const handleReadMore = (todo) => {
     setSelectedTodo(todo)
@@ -65,10 +65,10 @@ export function TodoKanban() {
 
   return (
     <div className="h-full flex flex-col">
-      <div className="flex items-center justify-between p-6 border-b bg-background flex-shrink-0">
+      <div className="flex items-center justify-between p-4 border-b bg-background flex-shrink-0">
         <div>
           <h1 className="text-2xl font-bold">Todo Board</h1>
-          <p className="text-muted-foreground">Manage tasks created from emails and manual entries</p>
+          {/* <p className="text-muted-foreground">Manage tasks created from emails and manual entries</p> */}
         </div>
         <Button onClick={() => setAddTaskOpen(true)}>
           <Plus className="h-4 w-4 mr-2" />
@@ -90,15 +90,15 @@ export function TodoKanban() {
               <div className="flex-1 bg-muted/20 rounded-b-lg p-2 overflow-y-auto min-h-0">
                 <div className="space-y-3">
                   {tasks
-                    .filter((todo) => todo.status === column.id)
+                    .filter((todo) => todo?.status === column.id)
                     .map((todo) => (
                       <Card
-                        key={todo.id}
+                        key={todo?.id}
                         className="transition-all duration-200 hover:shadow-md"
                       >
                         <CardHeader className="pb-2">
                           <div className="flex items-start justify-between">
-                            <CardTitle className="text-sm font-medium leading-tight">{todo.title}</CardTitle>
+                            <CardTitle className="text-sm font-medium leading-tight">{todo?.title}</CardTitle>
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" size="sm" className="h-6 w-6 p-0">

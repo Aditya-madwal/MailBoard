@@ -12,7 +12,7 @@ export const metadata = {
   description: "Manage multiple Gmail accounts with AI-powered categorization and todo management",
   generator: 'v0.dev',
   icons: {
-    icon: "/icon.svg", // Favicon (SVG)
+    icon: "/icon.png", // Favicon (SVG)
     // Optional: Add other icon formats
     shortcut: "/icon.png", // Fallback for older browsers
     apple: "/apple-touch-icon.png", // Apple touch icon

@@ -115,7 +115,7 @@ export function AppSidebar() {
         <SidebarHeader className="p-4">
           <div className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center">
-              <img src="/icon.svg" alt="Icon" className="w-fit h-fit object-cover" />
+              <img src="/icon.png" alt="Icon" className="w-fit h-fit object-cover rounded-lg" />
             </div>
             <span className="text-lg font-semibold">MailBoard</span>
           </div>
