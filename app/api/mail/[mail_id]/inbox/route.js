@@ -32,6 +32,8 @@ export async function GET(request, { params }) {
             return NextResponse.json({ error: 'Gmail account not found or unauthorized' }, { status: 403 })
         }
 
+        // return NextResponse.json(gmailAccount)
+
         const gmail = google.gmail({ version: 'v1', auth: oauth2Client })
         const people = google.people({ version: 'v1', auth: oauth2Client })
 
@@ -146,11 +148,11 @@ export async function GET(request, { params }) {
 
                 // Save to database with UserCategory initially null
                 // Only update if iscategorized is false or not set
-                const existingMail = await InboxMail.findOne({ messageId: detail.data.id })
+                const existingMail = await InboxMail.findOne({ messageId: detail.data.id, user: authResult.user.userId })
                 let savedMail
                 if (!existingMail || existingMail.UserCategory == null) {
                     savedMail = await InboxMail.findOneAndUpdate(
-                        { messageId: detail.data.id },
+                        { messageId: detail.data.id, user: authResult.user.userId },
                         {
                             gmailAccount: gmailAccount._id,
                             messageId: detail.data.id,
@@ -245,7 +247,7 @@ export async function GET(request, { params }) {
             console.warn('No user categories found, skipping AI categorization')
         } else {
             try {
-                console.log('Running AI categorization for', latestUncategorizedMails.length, 'emails...')
+                console.log('Running AI categorization for', latestUncategorizedMails.length, 'emails...among : ', userCategories)
                 const predictedCategories = await categorizeEmails(latestUncategorizedMails, userCategories)
 
                 // Step 4: Update database with predicted categories
@@ -253,7 +255,7 @@ export async function GET(request, { params }) {
                     const predictedCategory = predictedCategories[index] || null
 
                     await InboxMail.findOneAndUpdate(
-                        { messageId: msg.id },
+                        { messageId: msg.id, user: authResult.user.userId },
                         { UserCategory: userCategoriesObj.find(cat => cat.name.toLowerCase() === predictedCategory.toLowerCase())?.id || null },
                         { new: true }
                     )

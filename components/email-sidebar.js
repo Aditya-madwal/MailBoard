@@ -17,8 +17,9 @@ export function EmailSidebar() {
   const [emailDetailOpen, setEmailDetailOpen] = useState(false)
   const [selectedEmailForDetail, setSelectedEmailForDetail] = useState(null)
   const [isRefreshing, setIsRefreshing] = useState(false)
-  const [changingCategoryForEmail, setChangingCategoryForEmail] = useState(null) // Track which email is changing category
-  const [convertingToTaskForEmail, setConvertingToTaskForEmail] = useState(null) // Track which email is being converted to task
+  const [isLoading, setIsLoading] = useState(true) // Add loading state
+  const [changingCategoryForEmail, setChangingCategoryForEmail] = useState(null)
+  const [convertingToTaskForEmail, setConvertingToTaskForEmail] = useState(null)
   const { emails, setEmails, categories, mailAccounts, tasks, setTasks } = useMail()
 
   // Get URL parameters for filtering
@@ -86,15 +87,17 @@ export function EmailSidebar() {
     return filtered
   }, [emails, categories, categoryParam, labelParam, searchQuery])
 
-
   const fetchMails = async () => {
     try {
+      setIsLoading(true) // Set loading to true when starting fetch
       console.log("fetching all emails")
       const response = await getAllEmails()
       setEmails(response || [])
       console.log("emails fetched")
     } catch (err) {
       console.error("Error loading emails:", err)
+    } finally {
+      setIsLoading(false) // Set loading to false when fetch completes
     }
   }
 
@@ -219,35 +222,18 @@ export function EmailSidebar() {
               </Button>
             </div>
           </div>
-
-          {/* Show active filters */}
-          {/* {(categoryParam || labelParam) && (
-            <div className="mt-2 flex flex-wrap gap-1">
-              {categoryParam && (
-                <Badge variant="outline" className="text-xs">
-                  Category: {categories.find(cat =>
-                    cat.name.toLowerCase() === categoryParam.toLowerCase() ||
-                    cat._id === categoryParam
-                  )?.name || categoryParam}
-                </Badge>
-              )}
-              {labelParam && (
-                <Badge variant="outline" className="text-xs">
-                  Label: {labelParam}
-                </Badge>
-              )}
-            </div>
-          )} */}
         </div>
 
         <div className="flex-1 overflow-y-auto">
-          {emails.length === 0 && (
+          {/* Show loading spinner only when actually loading */}
+          {isLoading && (
             <div className="h-full w-full flex items-center justify-center">
               <div className="animate-spin rounded-full h-6 w-6 border-2 border-muted-foreground border-t-transparent" />
             </div>
           )}
 
-          {emails.length > 0 && filteredEmails.length === 0 && (categoryParam || labelParam) && (
+          {/* Show "no emails found" when not loading and no emails with filters */}
+          {!isLoading && emails.length > 0 && filteredEmails.length === 0 && (categoryParam || labelParam) && (
             <div className="h-full w-full flex items-center justify-center">
               <div className="text-center text-muted-foreground">
                 <p className="text-sm">No emails found</p>
@@ -256,121 +242,134 @@ export function EmailSidebar() {
             </div>
           )}
 
-          <div className="p-2">
-            {filteredEmails?.map((email) => {
-              const category = getCategoryDetails(email?.UserCategory)
-              const isChangingCategory = changingCategoryForEmail === email?.messageId
-              const isConvertingToTask = convertingToTaskForEmail === email?.messageId
+          {/* Show "no emails found" when not loading and truly no emails */}
+          {!isLoading && emails.length === 0 && (
+            <div className="h-full w-full flex items-center justify-center">
+              <div className="text-center text-muted-foreground">
+                <p className="text-sm">No emails found</p>
+                <p className="text-xs mt-1">Your inbox is empty</p>
+              </div>
+            </div>
+          )}
 
-              const getInitials = (name) => {
-                if (!name) return "";
-                const words = name.split(" ").filter(Boolean).slice(0, 2);
-                return words
-                  .map(word => {
-                    for (let i = 0; i < word.length; i++) {
-                      if (/[a-zA-Z0-9]/.test(word[i])) return word[i];
-                    }
-                    return "";
-                  })
-                  .join("")
-                  .toUpperCase();
-              };
+          {/* Render emails when not loading and emails exist */}
+          {!isLoading && filteredEmails.length > 0 && (
+            <div className="p-2">
+              {filteredEmails?.map((email) => {
+                const category = getCategoryDetails(email?.UserCategory)
+                const isChangingCategory = changingCategoryForEmail === email?.messageId
+                const isConvertingToTask = convertingToTaskForEmail === email?.messageId
 
-              return (
-                <div
-                  key={email?._id}
-                  className={`p-3 rounded-lg cursor-pointer transition-colors hover:bg-accent/50 ${email?.isUnread ? "bg-[#000000] border-l-2 border-blue-400" : ""} mb-1`}
-                  onClick={() => handleEmailClick(email)}
-                >
-                  <div className="flex items-start gap-3">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={email?.senderPicture || null} />
-                      <AvatarFallback>
-                        {getInitials(email?.senderName)}
-                      </AvatarFallback>
-                    </Avatar>
+                const getInitials = (name) => {
+                  if (!name) return "";
+                  const words = name.split(" ").filter(Boolean).slice(0, 2);
+                  return words
+                    .map(word => {
+                      for (let i = 0; i < word.length; i++) {
+                        if (/[a-zA-Z0-9]/.test(word[i])) return word[i];
+                      }
+                      return "";
+                    })
+                    .join("")
+                    .toUpperCase();
+                };
 
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className={`text-sm truncate ${email?.isUnread ? "font-semibold" : ""}`}>{email?.senderName}</span>
-                        <div className="flex items-center gap-1">
-                          <span className="text-xs text-muted-foreground">{formatTime(email?.date)}</span>
+                return (
+                  <div
+                    key={email?._id}
+                    className={`p-3 rounded-lg cursor-pointer transition-colors hover:bg-accent/50 ${email?.isUnread ? "bg-[#000000] border-l-2 border-blue-400" : ""} mb-1`}
+                    onClick={() => handleEmailClick(email)}
+                  >
+                    <div className="flex items-start gap-3">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={email?.senderPicture || null} />
+                        <AvatarFallback>
+                          {getInitials(email?.senderName)}
+                        </AvatarFallback>
+                      </Avatar>
+
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className={`text-sm truncate ${email?.isUnread ? "font-semibold" : ""}`}>{email?.senderName}</span>
+                          <div className="flex items-center gap-1">
+                            <span className="text-xs text-muted-foreground">{formatTime(email?.date)}</span>
+                          </div>
                         </div>
-                      </div>
 
-                      <p className={`text-sm mb-1 truncate ${email?.isUnread ? "font-medium" : "text-muted-foreground"}`}>
-                        {email?.subject}
-                      </p>
+                        <p className={`text-sm mb-1 truncate ${email?.isUnread ? "font-medium" : "text-muted-foreground"}`}>
+                          {email?.subject}
+                        </p>
 
-                      <p className="text-xs text-muted-foreground truncate mb-2">{email?.snippet}</p>
+                        <p className="text-xs text-muted-foreground truncate mb-2">{email?.snippet}</p>
 
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <button
-                                className="flex items-center gap-2 hover:bg-accent/50 px-1 py-0.5 transition-colors border rounded-full"
-                                disabled={isChangingCategory}
-                              >
-                                {isChangingCategory ? (
-                                  <Loader2 className="h-2 w-2 animate-spin" />
-                                ) : (
-                                  <div className={`h-2 w-2 rounded-full ${category?.color || "bg-gray-500"}`} />
-                                )}
-                                <span className="text-xs text-muted-foreground">
-                                  {isChangingCategory ? "Changing..." : (category?.name || "Uncategorized")}
-                                </span>
-                              </button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="start" className="w-32">
-                              {categories.map((cat) => (
-                                <DropdownMenuItem
-                                  key={cat._id}
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation()
-                                    changeCategory(email?.gmailAccount, email?.messageId, cat._id)
-                                  }}
-                                  className="flex items-center gap-2"
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <button
+                                  className="flex items-center gap-2 hover:bg-accent/50 px-1 py-0.5 transition-colors border rounded-full"
                                   disabled={isChangingCategory}
                                 >
-                                  <div className={`h-2 w-2 rounded-full ${cat.color}`} />
-                                  <span className="text-xs">{cat.name}</span>
-                                </DropdownMenuItem>
-                              ))}
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                          {email?.attachments.length > 0 && (
-                            <div className="h-3 w-3 rounded bg-muted flex items-center justify-center">
-                              <div className="h-1.5 w-1.5 bg-muted-foreground rounded-sm" />
-                            </div>
-                          )}
-                        </div>
+                                  {isChangingCategory ? (
+                                    <Loader2 className="h-2 w-2 animate-spin" />
+                                  ) : (
+                                    <div className={`h-2 w-2 rounded-full ${category?.color || "bg-gray-500"}`} />
+                                  )}
+                                  <span className="text-xs text-muted-foreground">
+                                    {isChangingCategory ? "Changing..." : (category?.name || "Uncategorized")}
+                                  </span>
+                                </button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="start" className="w-32">
+                                {categories.map((cat) => (
+                                  <DropdownMenuItem
+                                    key={cat._id}
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      e.stopPropagation()
+                                      changeCategory(email?.gmailAccount, email?.messageId, cat._id)
+                                    }}
+                                    className="flex items-center gap-2"
+                                    disabled={isChangingCategory}
+                                  >
+                                    <div className={`h-2 w-2 rounded-full ${cat.color}`} />
+                                    <span className="text-xs">{cat.name}</span>
+                                  </DropdownMenuItem>
+                                ))}
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                            {email?.attachments.length > 0 && (
+                              <div className="h-3 w-3 rounded bg-muted flex items-center justify-center">
+                                <div className="h-1.5 w-1.5 bg-muted-foreground rounded-sm" />
+                              </div>
+                            )}
+                          </div>
 
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            createTodo(email)
-                          }}
-                          disabled={isConvertingToTask}
-                          className="h-6 px-2 text-xs"
-                        >
-                          {isConvertingToTask ? (
-                            <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                          ) : (
-                            <CheckSquare className="h-3 w-3 mr-1" />
-                          )}
-                          {isConvertingToTask ? "Converting..." : "Todo"}
-                        </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              createTodo(email)
+                            }}
+                            disabled={isConvertingToTask}
+                            className="h-6 px-2 text-xs"
+                          >
+                            {isConvertingToTask ? (
+                              <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                            ) : (
+                              <CheckSquare className="h-3 w-3 mr-1" />
+                            )}
+                            {isConvertingToTask ? "Converting..." : "Todo"}
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              )
-            })}
-          </div>
+                )
+              })}
+            </div>
+          )}
         </div>
       </div>
 

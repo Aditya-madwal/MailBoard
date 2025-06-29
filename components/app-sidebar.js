@@ -3,7 +3,7 @@
 import * as React from "react"
 import { useEffect, useState } from "react"
 import { useRouter, useSearchParams, usePathname } from "next/navigation"
-import { Plus, Settings, LogOut, Sparkles } from "lucide-react"
+import { Plus, Settings, LogOut } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
@@ -22,70 +22,49 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { ConnectEmailDialog } from "@/components/connect-email-dialog"
 import { CreateCategoryDialog } from "@/components/create-category-dialog"
+import { CategoryOnboardingModal } from "@/components/category-onboarding-modal"
 import axios from "axios"
 import { fetchEmailAccounts } from "@/services/api/mail/accounts"
-import { getAllCategories } from "@/services/api/category/index"
+import { getAllCategories, createCategory } from "@/services/api/category/index"
 import { useMail } from "@/context/mailContext"
 import { SettingsModal } from "@/components/settings-modal"
+import { toast } from "react-hot-toast"
 
 export function AppSidebar() {
   const [connectDialogOpen, setConnectDialogOpen] = useState(false)
   const [createCategoryDialogOpen, setCreateCategoryDialogOpen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
-  const { mailAccounts, setMailAccounts, categories, setCategories, emails, setEmails, labels } = useMail()
+  const [categoryOnboardingOpen, setCategoryOnboardingOpen] = useState(false)
+  const [categoriesLoaded, setCategoriesLoaded] = useState(false)
 
+  const { mailAccounts, setMailAccounts, categories, setCategories, emails, labels } = useMail()
   const router = useRouter()
   const searchParams = useSearchParams()
   const pathname = usePathname()
-
-  // Get current active filters
   const activeCategory = searchParams.get('category')
   const activeLabel = searchParams.get('label')
 
-  // Helper function to update URL parameters
   const updateUrlParams = (newCategory, newLabel) => {
     const params = new URLSearchParams(searchParams.toString())
+    if (newCategory === null) params.delete('category')
+    else params.set('category', newCategory)
 
-    // Handle category parameter
-    if (newCategory === null) {
-      params.delete('category')
-    } else {
-      params.set('category', newCategory)
-    }
+    if (newLabel === null) params.delete('label')
+    else params.set('label', newLabel)
 
-    // Handle label parameter
-    if (newLabel === null) {
-      params.delete('label')
-    } else {
-      params.set('label', newLabel)
-    }
-
-    // Navigate to updated URL
     const queryString = params.toString()
     const newUrl = queryString ? `${pathname}?${queryString}` : pathname
     router.push(newUrl)
   }
 
-  // Handle category click
   const handleCategoryClick = (categoryName) => {
-    // If clicking the same category, toggle it off
-    if (activeCategory === categoryName) {
-      updateUrlParams(null, activeLabel)
-    } else {
-      // Set new category, keep existing label
-      updateUrlParams(categoryName, activeLabel)
-    }
+    if (activeCategory === categoryName) updateUrlParams(null, activeLabel)
+    else updateUrlParams(categoryName, activeLabel)
   }
 
-  // Handle label click
   const handleLabelClick = (labelName) => {
-    // If clicking the same label, toggle it off
-    if (activeLabel === labelName.toLowerCase()) {
-      updateUrlParams(activeCategory, null)
-    } else {
-      // Set new label, keep existing category
-      updateUrlParams(activeCategory, labelName.toLowerCase())
-    }
+    if (activeLabel === labelName.toLowerCase()) updateUrlParams(activeCategory, null)
+    else updateUrlParams(activeCategory, labelName.toLowerCase())
   }
 
   useEffect(() => {
@@ -95,19 +74,44 @@ export function AppSidebar() {
     }
 
     async function initCategories() {
-      const categories = await getAllCategories()
-      setCategories(categories)
+      try {
+        const categories = await getAllCategories()
+        setCategories(categories)
+        setCategoriesLoaded(true)
+        if (!categories || categories.length === 0) setCategoryOnboardingOpen(true)
+      } catch (error) {
+        console.error("Error fetching categories:", error)
+        setCategoriesLoaded(true)
+        setCategoryOnboardingOpen(true)
+      }
     }
-    console.log(categories)
 
     initAccounts()
     initCategories()
   }, [])
 
   useEffect(() => {
-    console.log(categories)
-    // console.log("ALL EMAILS ", emails)
-  }, [categories])
+    if (categoriesLoaded && categories && categories.length > 0) {
+      setCategoryOnboardingOpen(false)
+    }
+  }, [categories, categoriesLoaded])
+
+  const handleOnboardingComplete = async (selectedCategories) => {
+    try {
+      const newCreated = []
+      for (const categoryData of selectedCategories) {
+        const newCategory = await createCategory(categoryData)
+        newCreated.push(newCategory)
+      }
+      const refreshed = await getAllCategories()
+      setCategories(refreshed)
+      toast.success("Categories created successfully")
+      setCategoryOnboardingOpen(false)
+    } catch (error) {
+      console.error("Create category failed:", error)
+      toast.error("Failed to create some or all categories")
+    }
+  }
 
   return (
     <>
@@ -131,24 +135,24 @@ export function AppSidebar() {
             </div>
             <SidebarGroupContent>
               <SidebarMenu>
-                {mailAccounts?.map((account) => (
+                {mailAccounts.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center p-4 text-muted-foreground">
+                    <p className="text-sm font-medium">No accounts connected</p>
+                    <p className="text-xs opacity-75 text-center">Connect your email accounts to get started</p>
+                  </div>
+                ) : mailAccounts.map((account) => (
                   <SidebarMenuItem key={account.id}>
                     <SidebarMenuButton className="h-12 justify-start">
                       <Avatar className="h-8 w-8">
-                        <AvatarImage src={account?.avatar} />
-                        <AvatarFallback>
-                          {account.name
-                            .split(" ")
-                            .map((n) => n[0])
-                            .join("")}
-                        </AvatarFallback>
+                        <AvatarImage src={account.avatar} />
+                        <AvatarFallback>{account.name?.split(" ").map(n => n[0]).join("")}</AvatarFallback>
                       </Avatar>
                       <div className="flex flex-col items-start flex-1 min-w-0">
                         <span className="text-sm font-medium truncate">{account.name}</span>
                         <span className="text-xs text-muted-foreground truncate">{account.email}</span>
                       </div>
                       <Badge variant="secondary" className="ml-auto text-xs w-fit">
-                        {emails?.filter((e) => e.isUnread && e.gmailAccount == account.id).length}
+                        {emails?.filter(e => e.isUnread && e.gmailAccount === account.id).length}
                       </Badge>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -157,37 +161,31 @@ export function AppSidebar() {
             </SidebarGroupContent>
           </SidebarGroup>
 
-          {/* Categories */}
           <SidebarGroup>
             <div className="flex items-center justify-between w-full">
               <SidebarGroupLabel>Categories</SidebarGroupLabel>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setCreateCategoryDialogOpen(true)}
-                className="h-6 w-6 p-0"
-              >
+              <Button variant="ghost" size="sm" onClick={() => setCreateCategoryDialogOpen(true)} className="h-6 w-6 p-0">
                 <Plus className="h-4 w-4" />
               </Button>
             </div>
             <SidebarGroupContent>
               <SidebarMenu>
-                {categories?.map((category) => (
+                {categories.length === 0 && (
+                  <div className="flex flex-col items-center justify-center p-4 text-muted-foreground">
+                    <p className="text-sm font-medium">No categories added</p>
+                    <p className="text-xs opacity-75 text-center">Add categories to get started</p>
+                  </div>
+                )}
+                {categories.filter(c => c && c.name).map(category => (
                   <SidebarMenuItem key={category.name}>
                     <SidebarMenuButton
-                      className={`justify-start cursor-pointer transition-colors ${activeCategory === category.name
-                        ? 'bg-accent text-accent-foreground hover:bg-accent hover:text-accent-foreground'
-                        : 'hover:bg-accent/50'
-                        }`}
+                      className={`justify-start cursor-pointer transition-colors ${activeCategory === category.name ? 'bg-accent text-accent-foreground' : 'hover:bg-accent/50'}`}
                       onClick={() => handleCategoryClick(category.name)}
                     >
                       <div className={`h-3 w-3 rounded-full ${category.color}`} />
                       <span>{category.name}</span>
-                      <Badge
-                        variant={activeCategory === category.name ? "default" : "secondary"}
-                        className="ml-auto"
-                      >
-                        {emails?.filter((e) => e.UserCategory === category._id).length}
+                      <Badge variant={activeCategory === category.name ? "default" : "secondary"} className="ml-auto">
+                        {emails?.filter(e => e.UserCategory === category._id).length}
                       </Badge>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -196,27 +194,20 @@ export function AppSidebar() {
             </SidebarGroupContent>
           </SidebarGroup>
 
-          {/* Labels */}
           <SidebarGroup>
             <SidebarGroupLabel>Labels</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                {labels.map((label) => (
+                {labels.map(label => (
                   <SidebarMenuItem key={label.name}>
                     <SidebarMenuButton
-                      className={`justify-start cursor-pointer transition-colors ${activeLabel === label.name.toLowerCase()
-                        ? 'bg-accent text-accent-foreground hover:bg-accent hover:text-accent-foreground'
-                        : 'hover:bg-accent/50'
-                        }`}
+                      className={`justify-start cursor-pointer transition-colors ${activeLabel === label.name.toLowerCase() ? 'bg-accent text-accent-foreground' : 'hover:bg-accent/50'}`}
                       onClick={() => handleLabelClick(label.name)}
                     >
                       <div className={`h-3 w-3 rounded-full ${label.color}`} />
                       <span>{label.name}</span>
-                      <Badge
-                        variant={activeLabel === label.name.toLowerCase() ? "default" : "secondary"}
-                        className="ml-auto"
-                      >
-                        {emails?.filter((e) => e.gmailCategory.toLowerCase() == label.name.toLowerCase()).length}
+                      <Badge variant={activeLabel === label.name.toLowerCase() ? "default" : "secondary"} className="ml-auto">
+                        {emails?.filter(e => e.gmailCategory?.toLowerCase() === label.name.toLowerCase()).length}
                       </Badge>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -228,16 +219,14 @@ export function AppSidebar() {
 
         <SidebarFooter className="p-4">
           <SidebarMenu>
-            <SidebarMenuItem className="hover:bg-accent hover:text-accent-foreground transition-colors flex items-center gap-2 rounded-lg">
-              <SidebarMenuButton>
+            <SidebarMenuItem className="hover:bg-accent hover:text-accent-foreground">
+              <SidebarMenuButton onClick={() => setSettingsOpen(true)}>
                 <Settings className="h-4 w-4" />
-                <button onClick={() => setSettingsOpen(true)}>
-                  <span>Settings</span>
-                </button>
+                <span>Settings</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton className="hover:bg-red-100 hover:text-red-700 transition-colors">
+              <SidebarMenuButton className="hover:bg-red-100 hover:text-red-700">
                 <LogOut className="h-4 w-4" />
                 <span>Sign Out</span>
               </SidebarMenuButton>
@@ -245,11 +234,16 @@ export function AppSidebar() {
           </SidebarMenu>
         </SidebarFooter>
         <SidebarRail />
-      </Sidebar >
+      </Sidebar>
 
       <ConnectEmailDialog open={connectDialogOpen} onOpenChange={setConnectDialogOpen} />
       <CreateCategoryDialog open={createCategoryDialogOpen} onOpenChange={setCreateCategoryDialogOpen} />
       <SettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
+      <CategoryOnboardingModal
+        open={categoryOnboardingOpen}
+        onOpenChange={setCategoryOnboardingOpen}
+        onComplete={handleOnboardingComplete}
+      />
     </>
   )
 }

@@ -10,46 +10,14 @@ export function ConnectEmailDialog({ open, onOpenChange }) {
   const [step, setStep] = useState("select")
   const [selectedProvider, setSelectedProvider] = useState("")
 
-  const providers = [
-    {
-      id: "gmail",
-      name: "Gmail",
-      description: "Connect your Gmail account",
-      icon: "📧",
-      popular: true,
-    },
-    {
-      id: "outlook",
-      name: "Outlook",
-      description: "Connect your Outlook account",
-      icon: "📮",
-      popular: true,
-    },
-    {
-      id: "yahoo",
-      name: "Yahoo Mail",
-      description: "Connect your Yahoo account",
-      icon: "📬",
-      popular: false,
-    },
-    {
-      id: "imap",
-      name: "IMAP/SMTP",
-      description: "Connect any email provider",
-      icon: "⚙️",
-      popular: false,
-    },
-  ]
-
-  const handleConnect = (providerId) => {
-    setSelectedProvider(providerId)
+  const handleConnect = () => {
+    setSelectedProvider("gmail")
     setStep("oauth")
 
     // Simulate OAuth flow
     setTimeout(() => {
       setStep("success")
     }, 2000)
-
   }
 
   const handleClose = () => {
@@ -65,32 +33,26 @@ export function ConnectEmailDialog({ open, onOpenChange }) {
           <>
             <DialogHeader>
               <DialogTitle>Connect Email Account</DialogTitle>
-              <DialogDescription>Choose your email provider to get started</DialogDescription>
+              <DialogDescription>Only Gmail is supported right now</DialogDescription>
             </DialogHeader>
 
             <div className="space-y-3">
-              {providers.map((provider) => (
-                <Card
-                  key={provider.id}
-                  className="cursor-pointer transition-colors hover:bg-accent"
-                  // onClick={() => handleConnect(provider.id)}
-                  onClick={() => {
-                    window.location.href = `/api/auth/google/`
-                  }}
-                >
-                  <CardHeader className="pb-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <span className="text-2xl">{provider.icon}</span>
-                        <div>
-                          <CardTitle className="text-sm">{provider.name}</CardTitle>
-                          <CardDescription className="text-xs">{provider.description}</CardDescription>
-                        </div>
-                      </div>
+              <Card
+                className="cursor-pointer transition-colors hover:bg-accent"
+                onClick={() => {
+                  window.location.href = "/api/auth/google/"
+                }}
+              >
+                <CardHeader className="pb">
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">📧</span>
+                    <div>
+                      <CardTitle className="text-sm">Gmail</CardTitle>
+                      <CardDescription className="text-xs">Connect your Gmail account</CardDescription>
                     </div>
-                  </CardHeader>
-                </Card>
-              ))}
+                  </div>
+                </CardHeader>
+              </Card>
             </div>
           </>
         )}
@@ -98,7 +60,7 @@ export function ConnectEmailDialog({ open, onOpenChange }) {
         {step === "oauth" && (
           <>
             <DialogHeader>
-              <DialogTitle>Connecting to {providers.find((p) => p.id === selectedProvider)?.name}</DialogTitle>
+              <DialogTitle>Connecting to Gmail</DialogTitle>
               <DialogDescription>Please wait while we securely connect your account...</DialogDescription>
             </DialogHeader>
 
@@ -113,7 +75,7 @@ export function ConnectEmailDialog({ open, onOpenChange }) {
           <>
             <DialogHeader>
               <DialogTitle>Successfully Connected!</DialogTitle>
-              <DialogDescription>Your email account has been connected and is ready to use.</DialogDescription>
+              <DialogDescription>Your Gmail account has been connected and is ready to use.</DialogDescription>
             </DialogHeader>
 
             <div className="flex flex-col items-center justify-center py-8">

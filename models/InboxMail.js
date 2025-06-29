@@ -6,7 +6,7 @@ const inboxMailSchema = new mongoose.Schema(
     {
         gmailAccount: { type: mongoose.Schema.Types.ObjectId, ref: 'GmailAccount', required: true },
         user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-        messageId: { type: String, required: true, unique: true },
+        messageId: { type: String, required: true },
         threadId: { type: String },
         snippet: { type: String },
         subject: { type: String },
@@ -52,6 +52,7 @@ const inboxMailSchema = new mongoose.Schema(
     { timestamps: true }
 )
 
+inboxMailSchema.index({ messageId: 1, user: 1 }, { unique: true })
 
 export default mongoose.models.InboxMail ||
     mongoose.model("InboxMail", inboxMailSchema);
