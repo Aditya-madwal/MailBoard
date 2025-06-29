@@ -251,17 +251,38 @@ export async function GET(request, { params }) {
                 const predictedCategories = await categorizeEmails(latestUncategorizedMails, userCategories)
 
                 // Step 4: Update database with predicted categories
+                // const updatePromises = latestUncategorizedMails.map(async (msg, index) => {
+                //     const predictedCategory = predictedCategories[index] || null
+
+                //     await InboxMail.findOneAndUpdate(
+                //         { messageId: msg.id, user: authResult.user.userId },
+                //         { UserCategory: userCategoriesObj.find(cat => cat.name.toLowerCase() === predictedCategory.toLowerCase())?.id || null },
+                //         { new: true }
+                //     )
+
+                //     // Add predicted category to response
+                //     msg.UserCategory = userCategoriesObj.find(cat => cat.name.toLowerCase() === predictedCategory.toLowerCase())?.id || null
+                //     return msg
+                // })
+                // In your inbox route, after AI categorization
                 const updatePromises = latestUncategorizedMails.map(async (msg, index) => {
-                    const predictedCategory = predictedCategories[index] || null
+                    const predictedCategory = predictedCategories[index] || 'Uncategorized'
+
+                    // Find the category ID, handle uncategorized case
+                    let categoryId = null
+                    if (predictedCategory !== 'Uncategorized') {
+                        categoryId = userCategoriesObj.find(cat =>
+                            cat.name.toLowerCase() === predictedCategory.toLowerCase()
+                        )?.id || null
+                    }
 
                     await InboxMail.findOneAndUpdate(
                         { messageId: msg.id, user: authResult.user.userId },
-                        { UserCategory: userCategoriesObj.find(cat => cat.name.toLowerCase() === predictedCategory.toLowerCase())?.id || null },
+                        { UserCategory: categoryId },
                         { new: true }
                     )
 
-                    // Add predicted category to response
-                    msg.UserCategory = userCategoriesObj.find(cat => cat.name.toLowerCase() === predictedCategory.toLowerCase())?.id || null
+                    msg.UserCategory = categoryId
                     return msg
                 })
 

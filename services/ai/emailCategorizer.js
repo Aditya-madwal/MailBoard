@@ -18,7 +18,11 @@ function buildBatchPrompt(emails, categories) {
 You are an intelligent email assistant. Classify each of the following emails into one of these user-defined categories:
 [${categoryList}]
 
-Return an array of category names in the same order as the emails. Each category must be exactly one of the provided categories.
+IMPORTANT: Return category names with exact case matching. The available categories are: ${categoryList}
+
+Return an array of category names in the same order as the emails. Each category must be exactly one of the provided categories with matching capitalization.
+
+If an email doesn't fit any category, use "Uncategorized".
 
 Emails:\n`
 
@@ -56,72 +60,35 @@ export async function categorizeEmails(emails, categories) {
 
         // Parse the JSON response
         const parsed = JSON.parse(text)
+        console.log("AI Response:", parsed) // Debug log
 
         // Validate that we got the expected number of categories
         if (Array.isArray(parsed) && parsed.length === emails.length) {
-            // Validate that all categories are from the allowed list
-            const validCategories = parsed.every(category =>
-                categories.includes(category.toLowerCase()) || category === "uncategorized"
-            )
+            // Create a case-insensitive lookup for valid categories
+            const categoryMap = new Map()
+            categories.forEach(cat => {
+                categoryMap.set(cat.toLowerCase(), cat)
+            })
+            categoryMap.set('uncategorized', 'Uncategorized')
 
-            if (validCategories) {
-                return parsed
-            } else {
-                console.warn("Some categories not in allowed list, using fallback")
-                return emails.map(() => "uncategorized")
-            }
+            // Normalize and validate categories
+            const normalizedCategories = parsed.map(category => {
+                const lowerCategory = category.toLowerCase()
+                if (categoryMap.has(lowerCategory)) {
+                    return categoryMap.get(lowerCategory)
+                }
+                console.warn(`Unknown category: ${category}, using Uncategorized`)
+                return 'Uncategorized'
+            })
+
+            console.log("Normalized categories:", normalizedCategories) // Debug log
+            return normalizedCategories
+
         } else {
             throw new Error(`Expected ${emails.length} categories, got ${parsed.length}`)
         }
     } catch (err) {
         console.error("Gemini categorization failed:", err)
-        return emails.map(() => "uncategorized") // fallback: all uncategorized
+        return emails.map(() => "Uncategorized") // fallback: all uncategorized
     }
 }
-
-// Test data
-const emails = [
-    {
-        "id": "1979bf197b1b6c87",
-        "snippet": "pallavi.pal04 , aishaa_singh_1103 and others posted something new. Catch up on Instagram pallavi.pal04, aishaa_singh_1103 and others posted something new. Open Instagram 1 You have 1 notification that",
-        "subject": "__adityyaaaaa, catch up on moments that you've missed",
-        "date": "Mon, 23 Jun 2025 01:39:40 -0700",
-        "isUnread": true,
-        "senderName": "\"pallavi.pal04 on Instagram\"",
-        "senderEmail": "no-reply@mail.instagram.com",
-        "senderPicture": null,
-        "gmailCategory": "social",
-        "user": "6855a6606588cba2dfc9b3ef"
-    },
-    {
-        "id": "1979b82434e51dd5",
-        "snippet": "View jobs in India ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏ ͏",
-        "subject": "30+ new jobs for “python django”",
-        "date": "Mon, 23 Jun 2025 06:38:10 +0000 (UTC)",
-        "isUnread": true,
-        "senderName": "LinkedIn Job Alerts",
-        "senderEmail": "jobalerts-noreply@linkedin.com",
-        "senderPicture": null,
-        "gmailCategory": "updates",
-        "user": "6855a6606588cba2dfc9b3ef"
-    },
-    {
-        "id": "1979b6441165a46f",
-        "snippet": "Dear Customer, Rs.70.00 has been debited from account 1506 to VPA paytm.s17e148@pty Shane alam on 23-06-25. Your UPI transaction reference number is 517435265174. If you did not authorize this",
-        "subject": "❗  You have done a UPI txn. Check details!",
-        "date": "Mon, 23 Jun 2025 11:35:27 +0530",
-        "isUnread": true,
-        "senderName": "HDFC Bank InstaAlerts",
-        "senderEmail": "alerts@hdfcbank.net",
-        "senderPicture": null,
-        "gmailCategory": "updates",
-        "user": "6855a6606588cba2dfc9b3ef"
-    }
-]
-
-// const categories = ['personal', 'spam', 'college', 'work', 'offers', 'promotions', 'social', 'finance']
-
-// // Test the function
-// categorizeEmails(emails, categories).then(results => {
-//     console.log("Predicted Categories:", results)
-// })

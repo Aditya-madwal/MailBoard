@@ -41,7 +41,7 @@ export async function PATCH(request, { params }) {
         const newCategory = await UserCategory.findOne({ _id: new_category, user: authResult.user.userId })
 
         const updated_mail = await InboxMail.findOneAndUpdate(
-            { messageId: message_id },
+            { messageId: message_id, user: authResult.user.userId },
             { UserCategory: newCategory ? newCategory._id : null, isCategorized: !!newCategory },
             { new: true }
         )
