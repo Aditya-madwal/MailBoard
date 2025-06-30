@@ -1,7 +1,8 @@
 import { GoogleGenerativeAI } from '@google/generative-ai'
 
 // Load your Gemini API key
-const genAI = new GoogleGenerativeAI("AIzaSyCUx3Imz3Ek5FIvwLLRSc1HRA41zfdzT3c")
+const API_KEY = process.env.GEMINI_API_KEY
+const genAI = new GoogleGenerativeAI(API_KEY)
 
 // Define response schema for strict JSON format
 const responseSchema = {
