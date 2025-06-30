@@ -195,7 +195,7 @@ export function EmailSidebar() {
   }
 
   const getCategoryDetails = (categoryId) => {
-    return categories.find((cat) => cat._id === categoryId)
+    return categories?.find((cat) => cat._id === categoryId)
   }
 
   return (
@@ -321,7 +321,7 @@ export function EmailSidebar() {
                                 </button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="start" className="w-32">
-                                {categories.map((cat) => (
+                                {categories?.map((cat) => (
                                   <DropdownMenuItem
                                     key={cat._id}
                                     onClick={(e) => {

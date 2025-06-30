@@ -56,6 +56,11 @@ export function AppSidebar() {
   const activeCategory = searchParams.get('category')
   const activeLabel = searchParams.get('label')
 
+  // Add debug logging
+  console.log('Categories from context:', categories)
+  console.log('Categories loaded:', categoriesLoaded)
+  console.log('Category onboarding open:', categoryOnboardingOpen)
+
   const updateUrlParams = (newCategory, newLabel) => {
     const params = new URLSearchParams(searchParams.toString())
     if (newCategory === null) params.delete('category')
@@ -81,16 +86,27 @@ export function AppSidebar() {
 
   useEffect(() => {
     async function initAccounts() {
-      const accounts = await fetchEmailAccounts()
-      setMailAccounts(accounts)
+      try {
+        const accounts = await fetchEmailAccounts()
+        setMailAccounts(accounts)
+      } catch (error) {
+        console.error("Error fetching email accounts:", error)
+      }
     }
 
     async function initCategories() {
       try {
-        const categories = await getAllCategories()
-        setCategories(categories)
+        console.log('Fetching categories...')
+        const fetchedCategories = await getAllCategories()
+        console.log('Fetched categories:', fetchedCategories)
+
+        // Fix the logic here - the issue was with the .then() callback
+        if (fetchedCategories.length === 0) {
+          setCategoryOnboardingOpen(true)
+        }
+
+        setCategories(fetchedCategories)
         setCategoriesLoaded(true)
-        if (!categories || categories.length === 0) setCategoryOnboardingOpen(true)
       } catch (error) {
         console.error("Error fetching categories:", error)
         setCategoriesLoaded(true)
@@ -100,7 +116,7 @@ export function AppSidebar() {
 
     initAccounts()
     initCategories()
-  }, [])
+  }, [setMailAccounts, setCategories])
 
   useEffect(() => {
     if (categoriesLoaded && categories && categories.length > 0) {
@@ -127,30 +143,21 @@ export function AppSidebar() {
 
   const handleLogout = async () => {
     try {
-      // Call the logout API to clear server-side cookies
       await logoutUser()
-
-      // Clear client-side storage as backup
       localStorage.clear()
       sessionStorage.clear()
-
-      // Clear client-side cookies as well (backup)
       document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Strict'
       document.cookie = 'refreshToken=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Strict'
       document.cookie = 'session=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Strict'
-
       toast.success("Logged out successfully")
       router.push('/login')
     } catch (error) {
       console.error("Logout error:", error)
-
-      // Even if API call fails, still clear client-side data and redirect
       localStorage.clear()
       sessionStorage.clear()
       document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Strict'
       document.cookie = 'refreshToken=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Strict'
       document.cookie = 'session=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Strict'
-
       toast.success("Logged out successfully")
       router.push('/login')
     }
@@ -164,6 +171,10 @@ export function AppSidebar() {
     setLogoutDialogOpen(false)
     handleLogout()
   }
+
+  // Add better filtering for categories
+  const validCategories = categories?.filter(c => c && c.name && c._id) || []
+  console.log('Valid categories to render:', validCategories)
 
   return (
     <>
@@ -204,7 +215,7 @@ export function AppSidebar() {
                         <span className="text-xs text-muted-foreground truncate">{account.email}</span>
                       </div>
                       <Badge variant="secondary" className="ml-auto text-xs w-fit">
-                        {emails?.filter(e => e.isUnread && e.gmailAccount === account.id).length}
+                        {emails?.filter(e => e.isUnread && e.gmailAccount === account.id).length || 0}
                       </Badge>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -222,22 +233,30 @@ export function AppSidebar() {
             </div>
             <SidebarGroupContent>
               <SidebarMenu>
-                {categories.length === 0 && (
+                {/* Add debug info */}
+                {!categoriesLoaded && (
+                  <div className="flex flex-col items-center justify-center p-4 text-muted-foreground">
+                    <p className="text-sm font-medium">Loading categories...</p>
+                  </div>
+                )}
+
+                {categoriesLoaded && validCategories.length === 0 && (
                   <div className="flex flex-col items-center justify-center p-4 text-muted-foreground">
                     <p className="text-sm font-medium">No categories added</p>
                     <p className="text-xs opacity-75 text-center">Add categories to get started</p>
                   </div>
                 )}
-                {categories.filter(c => c && c.name).map(category => (
-                  <SidebarMenuItem key={category.name}>
+
+                {validCategories.map(category => (
+                  <SidebarMenuItem key={category._id || category.id}>
                     <SidebarMenuButton
                       className={`justify-start cursor-pointer transition-colors ${activeCategory === category.name ? 'bg-accent text-accent-foreground' : 'hover:bg-accent/50'}`}
                       onClick={() => handleCategoryClick(category.name)}
                     >
-                      <div className={`h-3 w-3 rounded-full ${category.color}`} />
+                      <div className={`h-3 w-3 rounded-full ${category.color || 'bg-gray-400'}`} />
                       <span>{category.name}</span>
                       <Badge variant={activeCategory === category.name ? "default" : "secondary"} className="ml-auto">
-                        {emails?.filter(e => e.UserCategory === category._id).length}
+                        {emails?.filter(e => e.UserCategory === category._id).length || 0}
                       </Badge>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -250,7 +269,7 @@ export function AppSidebar() {
             <SidebarGroupLabel>Labels</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                {labels.map(label => (
+                {labels?.map(label => (
                   <SidebarMenuItem key={label.name}>
                     <SidebarMenuButton
                       className={`justify-start cursor-pointer transition-colors ${activeLabel === label.name.toLowerCase() ? 'bg-accent text-accent-foreground' : 'hover:bg-accent/50'}`}
@@ -259,11 +278,11 @@ export function AppSidebar() {
                       <div className={`h-3 w-3 rounded-full ${label.color}`} />
                       <span>{label.name}</span>
                       <Badge variant={activeLabel === label.name.toLowerCase() ? "default" : "secondary"} className="ml-auto">
-                        {emails?.filter(e => e.gmailCategory?.toLowerCase() === label.name.toLowerCase()).length}
+                        {emails?.filter(e => e.gmailCategory?.toLowerCase() === label.name.toLowerCase()).length || 0}
                       </Badge>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
-                ))}
+                )) || []}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
@@ -300,7 +319,6 @@ export function AppSidebar() {
         onComplete={handleOnboardingComplete}
       />
 
-      {/* Logout Confirmation Dialog */}
       <AlertDialog open={logoutDialogOpen} onOpenChange={setLogoutDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>

@@ -14,32 +14,11 @@ import { useMail } from "@/context/mailContext"
 
 export default function Dashboard() {
     const { open, state } = useSidebar()
-    const [showOnboarding, setShowOnboarding] = useState(false)
-    const [userCategories, setUserCategories] = useState([])
-
-
-    // Alert whenever sidebar toggles
-    useEffect(() => {
-        // Check if user has categories set up
-        const savedCategories = localStorage.getItem("userCategories")
-        if (savedCategories) {
-            setUserCategories(JSON.parse(savedCategories))
-        } else {
-            // Show onboarding modal if no categories exist
-            setShowOnboarding(true)
-        }
-    }, [])
-
-    const handleOnboardingComplete = (categories) => {
-        setUserCategories(categories)
-        localStorage.setItem("userCategories", JSON.stringify(categories))
-        setShowOnboarding(false)
-    }
 
     return (
         <>
             {/* <AppSidebar /> */}
-            <AppSidebar userCategories={userCategories} />
+            <AppSidebar />
             <SidebarInset className="flex flex-col h-screen overflow-hidden">
                 {/* <div
                     className="fixed top-0 right-0 z-50 bg-background border-b group-data-[collapsible=offcanvas]:left-0 transition-all duration-200"
@@ -86,18 +65,13 @@ export default function Dashboard() {
                         style={open ? { '--sidebar-width': '16rem' } : { '--sidebar-width': '0px' }}
                     >
                         {/* <EmailSidebar /> */}
-                        <EmailSidebar userCategories={userCategories} />
+                        <EmailSidebar />
                     </div>
                     <main className="flex-1 overflow-hidden" style={{ marginLeft: "320px" }}>
                         <TodoKanban />
                     </main>
                 </div>
             </SidebarInset>
-            <CategoryOnboardingModal
-                open={showOnboarding}
-                onOpenChange={setShowOnboarding}
-                onComplete={handleOnboardingComplete}
-            />
         </>
     )
 }
