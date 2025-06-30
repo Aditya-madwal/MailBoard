@@ -84,7 +84,7 @@ export function CategoryOnboardingModal({ open, onOpenChange, onComplete }) {
                 <DialogHeader>
                     <div className="flex items-center gap-2 mb-2">
                         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-purple-600">
-                            <Sparkles className="h-4 w-4 text-white" />
+                            <img src="/icon.png" alt="logo" className="rounded-lg" />
                         </div>
                         <DialogTitle className="text-xl">Welcome to MailBoard!</DialogTitle>
                     </div>
