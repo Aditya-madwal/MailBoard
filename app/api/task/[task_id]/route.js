@@ -13,7 +13,7 @@ export async function PATCH(request, { params }) {
             return NextResponse.json({ error: authResult.error }, { status: 401 })
         }
 
-        const { task_id } = params
+        const { task_id } = await params
         const updates = await request.json()
 
         console.log(task_id)

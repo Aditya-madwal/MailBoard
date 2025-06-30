@@ -1,70 +1,97 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { Plus, Calendar, Link, Clock, User, MoreHorizontal, Eye, ChevronDown } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { AddTaskDialog } from "@/components/add-task-dialog"
-import { useMail } from "@/context/mailContext"
-import { getAllTasks, updateTask } from "@/services/api/todo"
+import { useEffect, useState } from "react";
+import {
+  Plus,
+  Calendar,
+  Link,
+  Clock,
+  User,
+  MoreHorizontal,
+  Eye,
+  ChevronDown,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { AddTaskDialog } from "@/components/add-task-dialog";
+import { useMail } from "@/context/mailContext";
+import { getAllTasks, updateTask, deleteTask } from "@/services/api/todo";
 
 const columns = [
   { id: "To Do", title: "To Do", color: "border-gray-500" },
   { id: "In Progress", title: "In Progress", color: "border-blue-500" },
   { id: "Review", title: "Review", color: "border-yellow-500" },
   { id: "Done", title: "Done", color: "border-green-500" },
-]
+];
 
 const priorityColors = {
   high: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
-  medium: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
+  medium:
+    "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
   low: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-}
+};
 
 export function TodoKanban() {
-  const [selectedTodo, setSelectedTodo] = useState(null)
-  const [addTaskOpen, setAddTaskOpen] = useState(false)
-  const [detailDialogOpen, setDetailDialogOpen] = useState(false)
+  const [selectedTodo, setSelectedTodo] = useState(null);
+  const [addTaskOpen, setAddTaskOpen] = useState(false);
+  const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const { tasks, setTasks } = useMail();
 
   const fetchTasks = async () => {
     const fetchedTasks = await getAllTasks();
     setTasks(fetchedTasks);
-  }
+  };
 
   useEffect(() => {
-    fetchTasks()
-  }, [])
+    fetchTasks();
+  }, []);
 
   const handleReadMore = (todo) => {
-    setSelectedTodo(todo)
-    setDetailDialogOpen(true)
-  }
+    setSelectedTodo(todo);
+    setDetailDialogOpen(true);
+  };
 
   const updateTaskStatus = async (taskId, newStatus) => {
-    const updated = await updateTask(taskId, { status: newStatus })
+    const updated = await updateTask(taskId, { status: newStatus });
     if (updated) {
-      fetchTasks()
+      fetchTasks();
     }
-  }
+  };
 
   const updateTaskPriority = async (taskId, newPriority) => {
-    const updated = await updateTask(taskId, { priority: newPriority })
+    const updated = await updateTask(taskId, { priority: newPriority });
     if (updated) {
-      fetchTasks()
+      fetchTasks();
     }
-  }
+  };
+  const delete_Task = async (taskId) => {
+    // alert("djbwedjb")
+    const deleted = await deleteTask(taskId);
+    if (deleted) {
+      fetchTasks();
+    }
+  };
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
-    })
-  }
+    });
+  };
 
   const formatDateTime = (dateString) => {
     return new Date(dateString).toLocaleString("en-US", {
@@ -72,8 +99,8 @@ export function TodoKanban() {
       day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
-    })
-  }
+    });
+  };
 
   return (
     <div className="h-full flex flex-col">
@@ -90,11 +117,16 @@ export function TodoKanban() {
       <div className="flex-1 overflow-x-auto overflow-y-hidden p-6">
         <div className="flex gap-6 h-full min-w-max">
           {columns.map((column) => (
-            <div key={column.id} className="flex flex-col w-80 flex-shrink-0 h-full">
-              <div className={`border-t-4 ${column.color} bg-card rounded-t-lg p-4 flex-shrink-0`}>
+            <div
+              key={column.id}
+              className="flex flex-col w-80 flex-shrink-0 h-full">
+              <div
+                className={`border-t-4 ${column.color} bg-card rounded-t-lg p-4 flex-shrink-0`}>
                 <div className="flex items-center justify-between">
                   <h3 className="font-semibold">{column.title}</h3>
-                  <Badge variant="secondary">{tasks.filter((todo) => todo.status === column.id).length}</Badge>
+                  <Badge variant="secondary">
+                    {tasks.filter((todo) => todo.status === column.id).length}
+                  </Badge>
                 </div>
               </div>
 
@@ -103,33 +135,71 @@ export function TodoKanban() {
                   {tasks
                     .filter((todo) => todo?.status === column.id)
                     .map((todo) => (
-                      <Card key={todo?.id} className="transition-all duration-200 hover:shadow-md">
+                      <Card
+                        key={todo?.id}
+                        className="transition-all duration-200 hover:shadow-md">
                         <CardHeader className="pb-2">
                           <div className="flex items-start justify-between">
-                            <CardTitle className="text-sm font-medium leading-tight">{todo?.title}</CardTitle>
+                            <CardTitle className="text-sm font-medium leading-tight">
+                              {todo?.title}
+                            </CardTitle>
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-6 w-6 p-0">
                                   <MoreHorizontal className="h-3 w-3" />
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
-                                <DropdownMenuItem className="text-destructive hover:bg-red-300 hover:text-red-500 cursor-pointer">Delete</DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => updateTaskStatus(todo._id, "To Do")}>Move to To Do</DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => updateTaskStatus(todo._id, "In Progress")}>Move to In Progress</DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => updateTaskStatus(todo._id, "Review")}>Move to Review</DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => updateTaskStatus(todo._id, "Done")}>Move to Done</DropdownMenuItem>
+                                <DropdownMenuItem
+                                  className="text-destructive hover:bg-red-300 hover:text-red-500 cursor-pointer"
+                                  onClick={() => delete_Task(todo._id)}>
+                                  Delete
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() =>
+                                    updateTaskStatus(todo._id, "To Do")
+                                  }>
+                                  Move to To Do
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() =>
+                                    updateTaskStatus(todo._id, "In Progress")
+                                  }>
+                                  Move to In Progress
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() =>
+                                    updateTaskStatus(todo._id, "Review")
+                                  }>
+                                  Move to Review
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() =>
+                                    updateTaskStatus(todo._id, "Done")
+                                  }>
+                                  Move to Done
+                                </DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
                           </div>
                         </CardHeader>
 
                         <CardContent className="pt-0">
-                          <p className="text-xs text-muted-foreground mb-3">{todo.description}</p>
+                          <p className="text-xs text-muted-foreground mb-3">
+                            {todo.description}
+                          </p>
 
                           <div className="flex flex-wrap gap-1 mb-3">
                             {todo.tags.map((tag) => (
-                              <Badge key={tag} variant="outline" className="text-xs">{tag}</Badge>
+                              <Badge
+                                key={tag}
+                                variant="outline"
+                                className="text-xs">
+                                {tag}
+                              </Badge>
                             ))}
                           </div>
 
@@ -137,12 +207,34 @@ export function TodoKanban() {
                             <div className="flex items-center gap-2">
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                  <Badge className={`text-xs cursor-pointer ${priorityColors[todo.priority.toLowerCase()]}`}>{todo.priority} <ChevronDown className="h-3 w-3 ml-1 inline" /></Badge>
+                                  <Badge
+                                    className={`text-xs cursor-pointer ${priorityColors[
+                                      todo.priority.toLowerCase()
+                                    ]
+                                      }`}>
+                                    {todo.priority}{" "}
+                                    <ChevronDown className="h-3 w-3 ml-1 inline" />
+                                  </Badge>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="start">
-                                  <DropdownMenuItem onClick={() => updateTaskPriority(todo._id, "High")}>High</DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => updateTaskPriority(todo._id, "Medium")}>Medium</DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => updateTaskPriority(todo._id, "Low")}>Low</DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() =>
+                                      updateTaskPriority(todo._id, "High")
+                                    }>
+                                    High
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() =>
+                                      updateTaskPriority(todo._id, "Medium")
+                                    }>
+                                    Medium
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() =>
+                                      updateTaskPriority(todo._id, "Low")
+                                    }>
+                                    Low
+                                  </DropdownMenuItem>
                                 </DropdownMenuContent>
                               </DropdownMenu>
                             </div>
@@ -150,8 +242,7 @@ export function TodoKanban() {
                               variant="ghost"
                               size="sm"
                               className="h-6 text-xs text-muted-foreground hover:text-foreground"
-                              onClick={() => handleReadMore(todo)}
-                            >
+                              onClick={() => handleReadMore(todo)}>
                               <Eye className="h-3 w-3" />
                               Read more
                             </Button>
@@ -176,13 +267,20 @@ export function TodoKanban() {
             <div className="space-y-6">
               <div>
                 <h3 className="font-semibold mb-2">Description</h3>
-                <p className="text-sm text-muted-foreground">{selectedTodo.description}</p>
+                <p className="text-sm text-muted-foreground">
+                  {selectedTodo.description}
+                </p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <h3 className="font-semibold mb-2">Priority</h3>
-                  <Badge className={priorityColors[selectedTodo.priority.toLowerCase()]}>{selectedTodo.priority}</Badge>
+                  <Badge
+                    className={
+                      priorityColors[selectedTodo.priority.toLowerCase()]
+                    }>
+                    {selectedTodo.priority}
+                  </Badge>
                 </div>
 
                 <div>
@@ -194,7 +292,9 @@ export function TodoKanban() {
                   <h3 className="font-semibold mb-2">Due Date</h3>
                   <div className="flex items-center gap-2 text-sm">
                     <Calendar className="h-4 w-4" />
-                    {selectedTodo.dueDate ? formatDate(selectedTodo.dueDate) : 'N/A'}
+                    {selectedTodo.dueDate
+                      ? formatDate(selectedTodo.dueDate)
+                      : "N/A"}
                   </div>
                 </div>
 
@@ -212,7 +312,9 @@ export function TodoKanban() {
                   <h3 className="font-semibold mb-2">Tags</h3>
                   <div className="flex flex-wrap gap-2">
                     {selectedTodo.tags.map((tag) => (
-                      <Badge key={tag} variant="outline">{tag}</Badge>
+                      <Badge key={tag} variant="outline">
+                        {tag}
+                      </Badge>
                     ))}
                   </div>
                 </div>
@@ -229,8 +331,7 @@ export function TodoKanban() {
                           href={link}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-blue-600 hover:underline text-sm break-all"
-                        >
+                          className="text-blue-600 hover:underline text-sm break-all">
                           {link}
                         </a>
                       </div>
@@ -245,5 +346,5 @@ export function TodoKanban() {
 
       <AddTaskDialog open={addTaskOpen} onOpenChange={setAddTaskOpen} />
     </div>
-  )
+  );
 }
