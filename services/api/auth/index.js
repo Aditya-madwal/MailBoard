@@ -27,3 +27,18 @@ export async function registerUser(userData) {
         throw new Error(err.response?.data?.message || "Registration request failed")
     }
 }
+
+/**
+ * Logout user
+ */
+export async function logoutUser() {
+    try {
+        const response = await axios.post(`${BASE_URL}/api/auth/logout`, {}, {
+            withCredentials: true // Important: Include cookies in the request
+        })
+        return response.data
+    } catch (err) {
+        console.error("Logout failed:", err)
+        throw new Error(err.response?.data?.message || "Logout request failed")
+    }
+}

@@ -20,12 +20,23 @@ import {
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { ConnectEmailDialog } from "@/components/connect-email-dialog"
 import { CreateCategoryDialog } from "@/components/create-category-dialog"
 import { CategoryOnboardingModal } from "@/components/category-onboarding-modal"
 import axios from "axios"
 import { fetchEmailAccounts } from "@/services/api/mail/accounts"
 import { getAllCategories, createCategory } from "@/services/api/category/index"
+import { logoutUser } from "@/services/api/auth/index"
 import { useMail } from "@/context/mailContext"
 import { SettingsModal } from "@/components/settings-modal"
 import { toast } from "react-hot-toast"
@@ -36,6 +47,7 @@ export function AppSidebar() {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [categoryOnboardingOpen, setCategoryOnboardingOpen] = useState(false)
   const [categoriesLoaded, setCategoriesLoaded] = useState(false)
+  const [logoutDialogOpen, setLogoutDialogOpen] = useState(false)
 
   const { mailAccounts, setMailAccounts, categories, setCategories, emails, labels } = useMail()
   const router = useRouter()
@@ -111,6 +123,46 @@ export function AppSidebar() {
       console.error("Create category failed:", error)
       toast.error("Failed to create some or all categories")
     }
+  }
+
+  const handleLogout = async () => {
+    try {
+      // Call the logout API to clear server-side cookies
+      await logoutUser()
+
+      // Clear client-side storage as backup
+      localStorage.clear()
+      sessionStorage.clear()
+
+      // Clear client-side cookies as well (backup)
+      document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Strict'
+      document.cookie = 'refreshToken=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Strict'
+      document.cookie = 'session=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Strict'
+
+      toast.success("Logged out successfully")
+      router.push('/login')
+    } catch (error) {
+      console.error("Logout error:", error)
+
+      // Even if API call fails, still clear client-side data and redirect
+      localStorage.clear()
+      sessionStorage.clear()
+      document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Strict'
+      document.cookie = 'refreshToken=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Strict'
+      document.cookie = 'session=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Strict'
+
+      toast.success("Logged out successfully")
+      router.push('/login')
+    }
+  }
+
+  const handleLogoutClick = () => {
+    setLogoutDialogOpen(true)
+  }
+
+  const confirmLogout = () => {
+    setLogoutDialogOpen(false)
+    handleLogout()
   }
 
   return (
@@ -226,7 +278,10 @@ export function AppSidebar() {
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton className="hover:bg-red-100 hover:text-red-700">
+              <SidebarMenuButton
+                className="hover:bg-red-100 hover:text-red-700"
+                onClick={handleLogoutClick}
+              >
                 <LogOut className="h-4 w-4" />
                 <span>Sign Out</span>
               </SidebarMenuButton>
@@ -244,6 +299,27 @@ export function AppSidebar() {
         onOpenChange={setCategoryOnboardingOpen}
         onComplete={handleOnboardingComplete}
       />
+
+      {/* Logout Confirmation Dialog */}
+      <AlertDialog open={logoutDialogOpen} onOpenChange={setLogoutDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Sign Out</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to sign out? You'll need to log in again to access your account.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmLogout}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Sign Out
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   )
 }
