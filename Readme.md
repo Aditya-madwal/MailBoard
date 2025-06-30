@@ -11,8 +11,8 @@
 ✅ **Modern Tech Stack** – Built using the latest features in **Next.js**, including app router and server components  
 ✅ **Authentication-ready** – Ready for integration with **JWT**, **OAuth**, or third-party providers  
 ✅ **Modular & Scalable Structure** – Clean codebase ready for production-level extensions  
-✅ **Dark Mode UI** – Designed with accessibility and modern aesthetics in mind  
-✅ **Auto Resource Extraction** – Automatically extracts important links, attachments, or metadata from emails when converting them into tasks  
+✅ **Dark Mode UI** – Designed with accessibility and modern aesthetics in mind
+✅ **Auto Resource Extraction** – Automatically extracts important links from emails when converting them into tasks
 ✅ **Smart Email Categorization** – AI-driven categorization of emails for better inbox organization  
 ✅ **AI-based Email Generation** – Drafts contextual replies or new emails based on subject and history  
 ✅ **Multi-Inbox Management** – Supports connecting and managing multiple inboxes simultaneously
@@ -80,8 +80,7 @@ npm run dev
 - [ ] Label and Category based organization
 - [ ] Multiple Emails support
 - [ ] Auto resource extraction from emails
-- [ ] AI-generated contextual replies
-- [ ] Team-based task assignment
+- [ ] AI-generated emails
 
 ---
 
