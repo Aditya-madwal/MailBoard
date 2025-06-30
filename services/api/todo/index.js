@@ -46,3 +46,33 @@ export async function convertMailToTask(accountId, messageId) {
         return null
     }
 }
+
+/**
+ * Update a task
+ */
+export async function updateTask(taskId, updateData) {
+    try {
+        const response = await axios.patch(`${BASE_URL}/api/task/${taskId}`, updateData)
+        toast.success("Task updated successfully!")
+        return response.data
+    } catch (err) {
+        console.error("Failed to update task:", err)
+        toast.error("Failed to update task. Please try again.")
+        return null
+    }
+}
+
+/**
+ * Delete a task
+ */
+export async function deleteTask(taskId) {
+    try {
+        await axios.delete(`${BASE_URL}/api/task/${taskId}`)
+        toast.success("Task deleted successfully!")
+        return true
+    } catch (err) {
+        console.error("Failed to delete task:", err)
+        toast.error("Failed to delete task. Please try again.")
+        return false
+    }
+}

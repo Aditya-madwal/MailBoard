@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Plus, Calendar, Link, Clock, User, MoreHorizontal, Eye } from "lucide-react"
+import { Plus, Calendar, Link, Clock, User, MoreHorizontal, Eye, ChevronDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -10,7 +10,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { AddTaskDialog } from "@/components/add-task-dialog"
 import { useMail } from "@/context/mailContext"
-import { getAllTasks } from "@/services/api/todo"
+import { getAllTasks, updateTask } from "@/services/api/todo"
 
 const columns = [
   { id: "To Do", title: "To Do", color: "border-gray-500" },
@@ -32,10 +32,8 @@ export function TodoKanban() {
   const { tasks, setTasks } = useMail();
 
   const fetchTasks = async () => {
-    console.log("fetchTasks")
     const fetchedTasks = await getAllTasks();
     setTasks(fetchedTasks);
-    // console.log(tasks)
   }
 
   useEffect(() => {
@@ -45,6 +43,20 @@ export function TodoKanban() {
   const handleReadMore = (todo) => {
     setSelectedTodo(todo)
     setDetailDialogOpen(true)
+  }
+
+  const updateTaskStatus = async (taskId, newStatus) => {
+    const updated = await updateTask(taskId, { status: newStatus })
+    if (updated) {
+      fetchTasks()
+    }
+  }
+
+  const updateTaskPriority = async (taskId, newPriority) => {
+    const updated = await updateTask(taskId, { priority: newPriority })
+    if (updated) {
+      fetchTasks()
+    }
   }
 
   const formatDate = (dateString) => {
@@ -68,7 +80,6 @@ export function TodoKanban() {
       <div className="flex items-center justify-between p-4 border-b bg-background flex-shrink-0">
         <div>
           <h1 className="text-2xl font-bold">Todo Board</h1>
-          {/* <p className="text-muted-foreground">Manage tasks created from emails and manual entries</p> */}
         </div>
         <Button onClick={() => setAddTaskOpen(true)}>
           <Plus className="h-4 w-4 mr-2" />
@@ -92,10 +103,7 @@ export function TodoKanban() {
                   {tasks
                     .filter((todo) => todo?.status === column.id)
                     .map((todo) => (
-                      <Card
-                        key={todo?.id}
-                        className="transition-all duration-200 hover:shadow-md"
-                      >
+                      <Card key={todo?.id} className="transition-all duration-200 hover:shadow-md">
                         <CardHeader className="pb-2">
                           <div className="flex items-start justify-between">
                             <CardTitle className="text-sm font-medium leading-tight">{todo?.title}</CardTitle>
@@ -106,9 +114,11 @@ export function TodoKanban() {
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
-                                <DropdownMenuItem>Edit</DropdownMenuItem>
-                                <DropdownMenuItem>Duplicate</DropdownMenuItem>
-                                <DropdownMenuItem className="text-destructive">Delete</DropdownMenuItem>
+                                <DropdownMenuItem className="text-destructive hover:bg-red-300 hover:text-red-500 cursor-pointer">Delete</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => updateTaskStatus(todo._id, "To Do")}>Move to To Do</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => updateTaskStatus(todo._id, "In Progress")}>Move to In Progress</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => updateTaskStatus(todo._id, "Review")}>Move to Review</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => updateTaskStatus(todo._id, "Done")}>Move to Done</DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
                           </div>
@@ -119,15 +129,22 @@ export function TodoKanban() {
 
                           <div className="flex flex-wrap gap-1 mb-3">
                             {todo.tags.map((tag) => (
-                              <Badge key={tag} variant="outline" className="text-xs">
-                                {tag}
-                              </Badge>
+                              <Badge key={tag} variant="outline" className="text-xs">{tag}</Badge>
                             ))}
                           </div>
 
                           <div className="flex items-center justify-between text-xs">
                             <div className="flex items-center gap-2">
-                              <Badge className={`text-xs ${priorityColors[todo.priority.toLowerCase()]}`}>{todo.priority}</Badge>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Badge className={`text-xs cursor-pointer ${priorityColors[todo.priority.toLowerCase()]}`}>{todo.priority} <ChevronDown className="h-3 w-3 ml-1 inline" /></Badge>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="start">
+                                  <DropdownMenuItem onClick={() => updateTaskPriority(todo._id, "High")}>High</DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => updateTaskPriority(todo._id, "Medium")}>Medium</DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => updateTaskPriority(todo._id, "Low")}>Low</DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
                             </div>
                             <Button
                               variant="ghost"
@@ -149,7 +166,6 @@ export function TodoKanban() {
         </div>
       </div>
 
-      {/* Task Detail Dialog */}
       <Dialog open={detailDialogOpen} onOpenChange={setDetailDialogOpen}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
@@ -166,9 +182,7 @@ export function TodoKanban() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <h3 className="font-semibold mb-2">Priority</h3>
-                  <Badge className={priorityColors[selectedTodo.priority.toLowerCase()]}>
-                    {selectedTodo.priority}
-                  </Badge>
+                  <Badge className={priorityColors[selectedTodo.priority.toLowerCase()]}>{selectedTodo.priority}</Badge>
                 </div>
 
                 <div>
@@ -198,9 +212,7 @@ export function TodoKanban() {
                   <h3 className="font-semibold mb-2">Tags</h3>
                   <div className="flex flex-wrap gap-2">
                     {selectedTodo.tags.map((tag) => (
-                      <Badge key={tag} variant="outline">
-                        {tag}
-                      </Badge>
+                      <Badge key={tag} variant="outline">{tag}</Badge>
                     ))}
                   </div>
                 </div>
