@@ -33,8 +33,8 @@ export function AddTaskDialog({ open, onOpenChange }) {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
-    status: "todo",
-    priority: "medium",
+    status: "To Do",
+    priority: "Medium",
     dueDate: "",
     tags: [],
     relatedLinks: [],

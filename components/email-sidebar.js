@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { EmailDetailModal } from "@/components/email-detail-modal"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { toast } from "sonner"
 import { useMail } from "@/context/mailContext"
 import { getAllEmails, getInboxEmails, markEmailAsRead, changeEmailCategory } from "@/services/api/mail/index"
 import { convertMailToTask } from "@/services/api/todo"
@@ -96,6 +97,9 @@ export function EmailSidebar() {
       console.log("emails fetched")
     } catch (err) {
       console.error("Error loading emails:", err)
+      toast.error("Failed to load emails", {
+        description: "There was an error loading your emails. Please try again."
+      })
     } finally {
       setIsLoading(false) // Set loading to false when fetch completes
     }
@@ -114,8 +118,18 @@ export function EmailSidebar() {
       const newTask = await convertMailToTask(email?.gmailAccount, email?.messageId)
       console.log(`✅ Email ${email?.messageId} converted to task successfully`)
       setTasks([...tasks, newTask])
+
+      // Success toast
+      toast.success("Todo created successfully!", {
+        description: `Created todo from "${email?.subject}"`
+      })
     } catch (err) {
       console.error(`❌ Failed to convert email ${email?.messageId} to task:`, err)
+
+      // Error toast
+      toast.error("Failed to create todo", {
+        description: "There was an error converting the email to a todo. Please try again."
+      })
     } finally {
       // Clear loading state
       setConvertingToTaskForEmail(null)
@@ -130,8 +144,21 @@ export function EmailSidebar() {
       await changeEmailCategory(account_id, emailId, newCategoryId)
       await fetchMails() // Refresh emails after changing category
       console.log(`✅ Email ${emailId} category updated to ${newCategoryId}`)
+
+      // Find the category name for the toast
+      const categoryName = categories?.find(cat => cat._id === newCategoryId)?.name || "Unknown"
+
+      // Success toast
+      toast.success("Category updated successfully!", {
+        description: `Email moved to "${categoryName}" category`
+      })
     } catch (err) {
       console.error(`❌ Failed to change category for email ${emailId}:`, err)
+
+      // Error toast
+      toast.error("Failed to update category", {
+        description: "There was an error updating the email category. Please try again."
+      })
     } finally {
       // Clear loading state
       setChangingCategoryForEmail(null)
@@ -159,8 +186,28 @@ export function EmailSidebar() {
       const allEmails = await getAllEmails();
       setEmails(allEmails || []);
       console.log("📥 All emails fetched and set.");
+
+      // Success toast for inbox refresh
+      if (failCount === 0) {
+        toast.success("Inbox refreshed successfully!", {
+          description: `Refreshed ${successCount} inbox${successCount !== 1 ? 'es' : ''}`
+        })
+      } else if (successCount > 0) {
+        toast.warning("Inbox partially refreshed", {
+          description: `${successCount} successful, ${failCount} failed`
+        })
+      } else {
+        toast.error("Failed to refresh inbox", {
+          description: "All inbox refresh attempts failed. Please try again."
+        })
+      }
     } catch (err) {
       console.error("🚨 Unexpected error during inbox refresh:", err);
+
+      // Error toast for unexpected errors
+      toast.error("Failed to refresh inbox", {
+        description: "An unexpected error occurred. Please try again."
+      })
     } finally {
       setIsRefreshing(false);
     }
@@ -181,6 +228,10 @@ export function EmailSidebar() {
         )
       } catch (err) {
         console.error("Error marking email as read:", err)
+        // Optional: Add toast for mark as read errors
+        toast.error("Failed to mark email as read", {
+          description: "The email content will still be displayed."
+        })
       }
     }
   }

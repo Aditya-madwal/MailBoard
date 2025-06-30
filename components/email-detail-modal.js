@@ -23,6 +23,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useMail } from "@/context/mailContext"
+import { convertMailToTask } from "@/services/api/todo"
 
 export const EmailDetailModal = ({ email: initialEmail, open, onOpenChange }) => {
     const [email, setEmail] = useState(null)
@@ -30,7 +31,8 @@ export const EmailDetailModal = ({ email: initialEmail, open, onOpenChange }) =>
     const [isStarred, setIsStarred] = useState(false)
     const [error, setError] = useState(null)
     const [showFullRecipients, setShowFullRecipients] = useState(false)
-    const { categories, mailAccounts } = useMail()
+    const [isConvertingToTask, setIsConvertingToTask] = useState(false)
+    const { categories, mailAccounts, tasks, setTasks } = useMail()
 
     useEffect(() => {
         const fetchEmailDetail = async () => {
@@ -83,6 +85,7 @@ export const EmailDetailModal = ({ email: initialEmail, open, onOpenChange }) =>
             setIsStarred(false)
             setError(null)
             setShowFullRecipients(false)
+            setIsConvertingToTask(false)
         }
     }, [initialEmail?.messageId, initialEmail?.gmailAccount, open])
 
@@ -95,6 +98,23 @@ export const EmailDetailModal = ({ email: initialEmail, open, onOpenChange }) =>
             setCurrentMailAccount(null);
         }
     }, [email, mailAccounts]);
+
+    const createTodo = async (email) => {
+        // Set loading state for todo conversion
+        setIsConvertingToTask(true)
+
+        try {
+            console.log("Creating todo from email:", email?.subject)
+            const newTask = await convertMailToTask(email?.gmailAccount, email?.messageId)
+            console.log(`✅ Email ${email?.messageId} converted to task successfully`)
+            setTasks([...tasks, newTask])
+        } catch (err) {
+            console.error(`❌ Failed to convert email ${email?.messageId} to task:`, err)
+        } finally {
+            // Clear loading state
+            setIsConvertingToTask(false)
+        }
+    }
 
     // Don't render anything if modal is not open
     if (!open) return null
@@ -113,7 +133,12 @@ export const EmailDetailModal = ({ email: initialEmail, open, onOpenChange }) =>
         })
     }
 
-    const handleCreateTodo = () => console.log("Creating todo from email:", email?.subject)
+    const handleCreateTodo = () => {
+        if (email) {
+            createTodo(email)
+        }
+    }
+
     const category = email?.UserCategory ? getCategoryDetails(email.UserCategory) : null
 
     // Helper function to render recipient list
@@ -379,10 +404,15 @@ export const EmailDetailModal = ({ email: initialEmail, open, onOpenChange }) =>
                                         variant="outline"
                                         size="sm"
                                         onClick={handleCreateTodo}
+                                        disabled={isConvertingToTask}
                                         className="bg-gradient-to-r from-blue-600 to-purple-600 text-white border-0 hover:from-blue-700 hover:to-purple-700"
                                     >
-                                        <CheckSquare className="h-4 w-4 mr-2" />
-                                        Create Todo
+                                        {isConvertingToTask ? (
+                                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                        ) : (
+                                            <CheckSquare className="h-4 w-4 mr-2" />
+                                        )}
+                                        {isConvertingToTask ? "Converting..." : "Create Todo"}
                                     </Button>
                                     <Button variant="outline" size="sm">
                                         <Archive className="h-4 w-4 mr-2" />

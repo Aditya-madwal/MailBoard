@@ -86,7 +86,7 @@ export function Header() {
             </div>
           )}
           <Avatar className="h-8 w-8">
-            <AvatarImage src={`https://api.dicebear.com/8.x/fun-emoji/svg?seed=${Math.random()}`} />
+            {/* <AvatarImage src={`https://api.dicebear.com/8.x/fun-emoji/svg?seed=${Math.random()}`} /> */}
             <AvatarFallback>{user?.name?.[0]?.toUpperCase() || 'U'}</AvatarFallback>
           </Avatar>
         </div>
