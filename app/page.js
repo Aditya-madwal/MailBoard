@@ -1,68 +1,92 @@
 import Link from "next/link"
-import { ArrowRight, Mail, Sparkles, CheckCircle, Star, Zap, Shield } from "lucide-react"
+import { ArrowRight, Mail, Sparkles, CheckCircle, Star, Zap, Shield, Github, Code, Palette, Lock, Brain, Database, Cloud } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 const features = [
   {
-    icon: Mail,
-    title: "Smart Email Management",
+    icon: Lock,
+    title: "User Registration & Login",
     description:
-      "Connect multiple Gmail accounts and manage them from one unified inbox with AI-powered categorization.",
+      "Secure signup and login system with form validations and JWT authentication ready for production.",
   },
   {
-    icon: Sparkles,
-    title: "AI-Powered Organization",
+    icon: Palette,
+    title: "Responsive UI",
     description:
-      "Automatically categorize emails, create todos, and get intelligent suggestions for better productivity.",
+      "Beautifully designed interface with dark mode support, built for desktop and tablets with modern aesthetics.",
+  },
+  {
+    icon: Code,
+    title: "Modern Tech Stack",
+    description:
+      "Built using Next.js 14 with app router, server components, and latest React features for optimal performance.",
+  },
+  {
+    icon: Mail,
+    title: "Multi-Inbox Management",
+    description:
+      "Connect and manage multiple Gmail accounts from one unified dashboard with seamless synchronization.",
+  },
+  {
+    icon: Brain,
+    title: "AI-Powered Features",
+    description:
+      "Smart email categorization, auto resource extraction, and AI-based email generation using Gemini API.",
   },
   {
     icon: Zap,
-    title: "Lightning Fast",
+    title: "Modular & Scalable",
     description:
-      "Built for speed with real-time sync, instant search, and seamless navigation across all your accounts.",
-  },
-  {
-    icon: Shield,
-    title: "Enterprise Security",
-    description: "Bank-level encryption and OAuth 2.0 authentication keep your emails and data completely secure.",
+      "Clean, production-ready codebase with modular structure designed for easy extension and maintenance.",
   },
 ]
 
-const testimonials = [
+const techStack = [
   {
-    name: "Sarah Chen",
-    role: "Marketing Director",
-    company: "TechCorp",
-    avatar: "/placeholder.svg?height=40&width=40",
-    content: "MailBoard transformed how I manage my work emails. The AI categorization is incredibly accurate!",
-    rating: 5,
+    category: "Frontend & Backend",
+    tech: "Next.js 14",
+    icon: Code,
+    color: "from-black to-gray-700"
   },
   {
-    name: "Michael Rodriguez",
-    role: "Freelance Designer",
-    company: "Independent",
-    avatar: "/placeholder.svg?height=40&width=40",
-    content: "Managing client emails across multiple accounts used to be a nightmare. Now it's effortless.",
-    rating: 5,
+    category: "Styling",
+    tech: "Tailwind CSS & Radix UI",
+    icon: Palette,
+    color: "from-blue-500 to-cyan-500"
   },
   {
-    name: "Emily Johnson",
-    role: "Startup Founder",
-    company: "InnovateLab",
-    avatar: "/placeholder.svg?height=40&width=40",
-    content: "The todo integration is a game-changer. I never miss important follow-ups anymore.",
-    rating: 5,
+    category: "AI Integration",
+    tech: "Gemini API",
+    icon: Brain,
+    color: "from-purple-500 to-pink-500"
   },
+  {
+    category: "Database",
+    tech: "MongoDB",
+    icon: Database,
+    color: "from-green-600 to-green-400"
+  },
+  {
+    category: "Deployment",
+    tech: "Vercel",
+    icon: Cloud,
+    color: "from-gray-900 to-black"
+  },
+  {
+    category: "Mail",
+    tech: "Gmail API",
+    icon: Mail,
+    color: "from-red-500 to-orange-500"
+  }
 ]
 
 const stats = [
-  { number: "50K+", label: "Active Users" },
-  { number: "2M+", label: "Emails Processed" },
-  { number: "99.9%", label: "Uptime" },
-  { number: "4.9/5", label: "User Rating" },
+  { number: "Next.js", label: "Latest Framework" },
+  { number: "GeminiAI", label: "Smart Features" },
+  { number: "Dark", label: "Themed" },
+  { number: "Production", label: "Ready" },
 ]
 
 export default function LandingPage() {
@@ -72,8 +96,8 @@ export default function LandingPage() {
       <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-purple-600">
-              <Sparkles className="h-4 w-4 text-white" />
+            <div className="flex h-8 w-8 items-center justify-center">
+              <img src="/icon.png" alt="logo" className="rounded-lg" />
             </div>
             <span className="text-xl font-bold">MailBoard</span>
           </div>
@@ -82,23 +106,26 @@ export default function LandingPage() {
             <Link href="#features" className="text-sm font-medium hover:text-primary transition-colors">
               Features
             </Link>
-            <Link href="#testimonials" className="text-sm font-medium hover:text-primary transition-colors">
-              Testimonials
+            <Link href="#tech-stack" className="text-sm font-medium hover:text-primary transition-colors">
+              Tech Stack
             </Link>
-            <Link href="#pricing" className="text-sm font-medium hover:text-primary transition-colors">
-              Pricing
+            <Link href="#demo" className="text-sm font-medium hover:text-primary transition-colors">
+              Demo
             </Link>
           </nav>
 
           <div className="flex items-center gap-2">
             <Button variant="ghost" asChild>
-              <Link href="/login">Sign In</Link>
+              <Link href="https://github.com/Aditya-madwal/mailboard" target="_blank" rel="noopener noreferrer">
+                <Github className="h-4 w-4 mr-2" />
+                GitHub
+              </Link>
             </Button>
             <Button
               asChild
               className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
             >
-              <Link href="/signup">Get Started</Link>
+              <Link href="/signup">Try Demo</Link>
             </Button>
           </div>
         </div>
@@ -108,20 +135,19 @@ export default function LandingPage() {
       <section className="py-20 px-4">
         <div className="container mx-auto text-center max-w-4xl">
           <Badge variant="outline" className="mb-4">
-            ✨ Now with AI-powered email categorization
+            🚀 Keep better track of your emails and tasks
           </Badge>
 
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-6">
-            Manage All Your{" "}
+            Smart Email Management{" "}
             <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Gmail Accounts
-            </span>{" "}
-            in One Place
+              With AI Power
+            </span>
           </h1>
 
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Connect multiple Gmail accounts, organize emails with AI, create todos automatically, and boost your
-            productivity with our smart email management platform.
+            A modern email management SaaS platform built with Next.js, featuring AI-powered categorization,
+            multi-inbox support, and smart email generation using Gemini API.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
@@ -131,12 +157,15 @@ export default function LandingPage() {
               className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
             >
               <Link href="/signup">
-                Start Free Trial
+                Try Live Demo
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
             <Button size="lg" variant="outline" asChild>
-              <Link href="/dashboard">View Demo</Link>
+              <Link href="https://github.com/Aditya-madwal/mailboard" target="_blank" rel="noopener noreferrer">
+                <Github className="mr-2 h-4 w-4" />
+                View on GitHub
+              </Link>
             </Button>
           </div>
 
@@ -156,15 +185,15 @@ export default function LandingPage() {
       <section id="features" className="py-20 px-4 bg-muted/20">
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Everything You Need to Master Your Email</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Powerful Features</h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Powerful features designed to streamline your email workflow and boost productivity.
+              Built with modern technologies and AI integration for the next generation of email management.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {features.map((feature, index) => (
-              <Card key={index} className="border-0 shadow-sm hover:shadow-md transition-shadow">
+              <Card key={index} className="border-0 shadow-sm hover:shadow-md transition-all duration-300 hover:scale-105">
                 <CardHeader>
                   <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center mb-4">
                     <feature.icon className="h-6 w-6 text-white" />
@@ -180,41 +209,23 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Testimonials Section */}
-      <section id="testimonials" className="py-20 px-4">
+      {/* Tech Stack Section */}
+      <section id="tech-stack" className="py-20 px-4">
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Loved by Thousands of Users</h2>
-            <p className="text-xl text-muted-foreground">See what our users have to say about MailBoard</p>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">⚡ Modern Tech Stack</h2>
+            <p className="text-xl text-muted-foreground">Built with cutting-edge technologies for optimal performance and scalability</p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6">
-            {testimonials.map((testimonial, index) => (
-              <Card key={index} className="border-0 shadow-sm">
-                <CardContent className="pt-6">
-                  <div className="flex mb-4">
-                    {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                    ))}
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {techStack.map((item, index) => (
+              <Card key={index} className="border-0 shadow-sm hover:shadow-lg transition-all duration-300 group">
+                <CardContent className="p-6 pt-6 flex items-center justify-center flex-col">
+                  <div className={`h-12 w-12 rounded-lg bg-gradient-to-br ${item.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
+                    <item.icon className="h-6 w-6 text-white" />
                   </div>
-                  <p className="text-sm mb-4 leading-relaxed">"{testimonial.content}"</p>
-                  <div className="flex items-center gap-3">
-                    <Avatar className="h-10 w-10">
-                      <AvatarImage src={testimonial.avatar || "/placeholder.svg"} />
-                      <AvatarFallback>
-                        {testimonial.name
-                          .split(" ")
-                          .map((n) => n[0])
-                          .join("")}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <div className="font-medium text-sm">{testimonial.name}</div>
-                      <div className="text-xs text-muted-foreground">
-                        {testimonial.role} at {testimonial.company}
-                      </div>
-                    </div>
-                  </div>
+                  <div className="font-semibold text-sm text-muted-foreground mb-1">{item.category}</div>
+                  <div className="font-bold text-lg">{item.tech}</div>
                 </CardContent>
               </Card>
             ))}
@@ -222,92 +233,12 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Pricing Section */}
-      <section id="pricing" className="py-20 px-4 bg-muted/20">
-        <div className="container mx-auto max-w-4xl">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Simple, Transparent Pricing</h2>
-            <p className="text-xl text-muted-foreground">Choose the plan that works best for you</p>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-6 max-w-2xl mx-auto">
-            <Card className="border-2 border-muted">
-              <CardHeader>
-                <CardTitle className="text-xl">Free</CardTitle>
-                <CardDescription>Perfect for getting started</CardDescription>
-                <div className="text-3xl font-bold">
-                  $0<span className="text-sm font-normal">/month</span>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-600" />
-                    <span className="text-sm">Up to 2 Gmail accounts</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-600" />
-                    <span className="text-sm">Basic email categorization</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-600" />
-                    <span className="text-sm">Todo creation</span>
-                  </div>
-                </div>
-                <Button className="w-full" variant="outline" asChild>
-                  <Link href="/signup">Get Started Free</Link>
-                </Button>
-              </CardContent>
-            </Card>
-
-            <Card className="border-2 border-primary relative">
-              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                <Badge className="bg-gradient-to-r from-blue-600 to-purple-600">Most Popular</Badge>
-              </div>
-              <CardHeader>
-                <CardTitle className="text-xl">Pro</CardTitle>
-                <CardDescription>For power users and teams</CardDescription>
-                <div className="text-3xl font-bold">
-                  $12<span className="text-sm font-normal">/month</span>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-600" />
-                    <span className="text-sm">Unlimited Gmail accounts</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-600" />
-                    <span className="text-sm">AI-powered categorization</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-600" />
-                    <span className="text-sm">Advanced todo management</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-600" />
-                    <span className="text-sm">Priority support</span>
-                  </div>
-                </div>
-                <Button
-                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-                  asChild
-                >
-                  <Link href="/signup">Start Pro Trial</Link>
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-20 px-4">
+      {/* Demo Section */}
+      <section id="demo" className="py-20 px-4 bg-muted/20">
         <div className="container mx-auto text-center max-w-3xl">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to Transform Your Email Experience?</h2>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to Experience Smart Email Management?</h2>
           <p className="text-xl text-muted-foreground mb-8">
-            Join thousands of users who have already streamlined their email workflow with MailBoard.
+            Try the live demo or explore the source code on GitHub. Built with passion for developers by developers.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button
@@ -316,12 +247,15 @@ export default function LandingPage() {
               className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
             >
               <Link href="/signup">
-                Start Your Free Trial
+                Launch Demo
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
             <Button size="lg" variant="outline" asChild>
-              <Link href="/login">Sign In to Your Account</Link>
+              <Link href="https://github.com/Aditya-madwal/mailboard" target="_blank" rel="noopener noreferrer">
+                <Github className="mr-2 h-4 w-4" />
+                Star on GitHub
+              </Link>
             </Button>
           </div>
         </div>
@@ -330,65 +264,47 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="border-t bg-muted/20 py-12 px-4">
         <div className="container mx-auto max-w-6xl">
-          <div className="grid md:grid-cols-4 gap-8">
+          <div className="grid md:grid-cols-3 gap-8">
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-purple-600">
-                  <Sparkles className="h-4 w-4 text-white" />
+                  <img src="/icon.png" alt="logo" className="rounded-lg" />
                 </div>
                 <span className="text-lg font-bold">MailBoard</span>
               </div>
-              <p className="text-sm text-muted-foreground">Smart email management for the modern professional.</p>
+              <p className="text-sm text-muted-foreground">Email and Task management for modern professionals and students.</p>
             </div>
 
             <div>
-              <h4 className="font-semibold mb-4">Product</h4>
+              <h4 className="font-semibold mb-4">Project</h4>
               <div className="space-y-2 text-sm">
                 <Link href="#features" className="block text-muted-foreground hover:text-foreground">
                   Features
                 </Link>
-                <Link href="#pricing" className="block text-muted-foreground hover:text-foreground">
-                  Pricing
+                <Link href="#tech-stack" className="block text-muted-foreground hover:text-foreground">
+                  Tech Stack
                 </Link>
-                <Link href="/dashboard" className="block text-muted-foreground hover:text-foreground">
-                  Demo
-                </Link>
-              </div>
-            </div>
-
-            <div>
-              <h4 className="font-semibold mb-4">Company</h4>
-              <div className="space-y-2 text-sm">
-                <Link href="/about" className="block text-muted-foreground hover:text-foreground">
-                  About
-                </Link>
-                <Link href="/contact" className="block text-muted-foreground hover:text-foreground">
-                  Contact
-                </Link>
-                <Link href="/careers" className="block text-muted-foreground hover:text-foreground">
-                  Careers
+                <Link href="/signup" className="block text-muted-foreground hover:text-foreground">
+                  Live Demo
                 </Link>
               </div>
             </div>
 
             <div>
-              <h4 className="font-semibold mb-4">Support</h4>
+              <h4 className="font-semibold mb-4">Open Source</h4>
               <div className="space-y-2 text-sm">
-                <Link href="/help" className="block text-muted-foreground hover:text-foreground">
-                  Help Center
+                <Link href="https://github.com/Aditya-madwal/mailboard" className="block text-muted-foreground hover:text-foreground">
+                  GitHub Repository
                 </Link>
-                <Link href="/privacy" className="block text-muted-foreground hover:text-foreground">
-                  Privacy Policy
-                </Link>
-                <Link href="/terms" className="block text-muted-foreground hover:text-foreground">
-                  Terms of Service
+                <Link href="https://github.com/Aditya-madwal/mailboard/issues" className="block text-muted-foreground hover:text-foreground">
+                  Report Issues
                 </Link>
               </div>
             </div>
           </div>
 
           <div className="border-t mt-8 pt-8 text-center text-sm text-muted-foreground">
-            <p>&copy; 2024 MailBoard. All rights reserved.</p>
+            <p>&copy; 2024 MailBoard</p>
           </div>
         </div>
       </footer>
