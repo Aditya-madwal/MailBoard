@@ -23,7 +23,6 @@ export function Header({ onToggleTodoBoard, showTodoBoard }) {
   const [user, setUser] = useState(null)
   const [isMobile, setIsMobile] = useState(false)
 
-  // Check if mobile
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768)
@@ -97,7 +96,6 @@ export function Header({ onToggleTodoBoard, showTodoBoard }) {
               Compose
             </Button>
 
-            {/* Mobile Compose Button */}
             <Button
               onClick={() => setComposeOpen(true)}
               size="icon"
@@ -106,17 +104,15 @@ export function Header({ onToggleTodoBoard, showTodoBoard }) {
               <Plus className="h-4 w-4" />
             </Button>
 
-            {/* Todo Board Toggle Button */}
-            <Button
-              onClick={onToggleTodoBoard}
-              variant={showTodoBoard ? "default" : "outline"}
-              size={isMobile ? "icon" : "default"}
-              className="relative"
-            >
-              <Kanban className="h-4 w-4" />
-              {!isMobile && <span className="ml-2">Tasks</span>}
-
-            </Button>
+            {isMobile && (
+              <Button
+                onClick={onToggleTodoBoard}
+                variant={showTodoBoard ? "default" : "outline"}
+                className="relative"
+              >
+                <Kanban className="h-4 w-4" />
+              </Button>
+            )}
           </div>
         </div>
 

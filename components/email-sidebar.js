@@ -23,13 +23,11 @@ export function EmailSidebar() {
   const [convertingToTaskForEmail, setConvertingToTaskForEmail] = useState(null)
   const { emails, setEmails, categories, mailAccounts, tasks, setTasks } = useMail()
 
-  // Get URL parameters for filtering
   const searchParams = useSearchParams()
   const categoryParam = searchParams.get('category')
   const labelParam = searchParams.get('label')
   const searchQuery = searchParams.get('search')
 
-  // Filter emails based on URL parameters
   const filteredEmails = useMemo(() => {
     if (!emails) return []
 
@@ -37,7 +35,6 @@ export function EmailSidebar() {
 
     // Filter by category if category parameter exists
     if (categoryParam) {
-      // Find category by name (case-insensitive) or ID
       const targetCategory = categories.find(cat =>
         cat.name.toLowerCase() === categoryParam.toLowerCase() ||
         cat._id === categoryParam
@@ -46,7 +43,6 @@ export function EmailSidebar() {
       if (targetCategory) {
         filtered = filtered.filter(email => email.UserCategory === targetCategory._id)
       } else {
-        // If category not found, show empty results
         filtered = []
       }
     }
@@ -90,7 +86,7 @@ export function EmailSidebar() {
 
   const fetchMails = async () => {
     try {
-      setIsLoading(true) // Set loading to true when starting fetch
+      setIsLoading(true)
       console.log("fetching all emails")
       const response = await getAllEmails()
       setEmails(response || [])
@@ -101,7 +97,7 @@ export function EmailSidebar() {
         description: "There was an error loading your emails. Please try again."
       })
     } finally {
-      setIsLoading(false) // Set loading to false when fetch completes
+      setIsLoading(false)
     }
   }
 
@@ -110,7 +106,6 @@ export function EmailSidebar() {
   }, [])
 
   const createTodo = async (email) => {
-    // Set loading state for this specific email
     setConvertingToTaskForEmail(email?.messageId)
 
     try {
@@ -119,48 +114,54 @@ export function EmailSidebar() {
       console.log(`✅ Email ${email?.messageId} converted to task successfully`)
       setTasks([...tasks, newTask])
 
-      // Success toast
       toast.success("Todo created successfully!", {
         description: `Created todo from "${email?.subject}"`
       })
     } catch (err) {
       console.error(`❌ Failed to convert email ${email?.messageId} to task:`, err)
 
-      // Error toast
       toast.error("Failed to create todo", {
         description: "There was an error converting the email to a todo. Please try again."
       })
     } finally {
-      // Clear loading state
       setConvertingToTaskForEmail(null)
     }
   }
 
+  const fetchMailsSilently = async () => {
+    try {
+      console.log("fetching all emails silently")
+      const response = await getAllEmails()
+      setEmails(response || [])
+      console.log("emails fetched silently")
+    } catch (err) {
+      console.error("Error loading emails:", err)
+      toast.error("Failed to load emails", {
+        description: "There was an error loading your emails. Please try again."
+      })
+    }
+  }
+
   const changeCategory = async (account_id, emailId, newCategoryId) => {
-    // Set loading state for this specific email
     setChangingCategoryForEmail(emailId)
 
     try {
       await changeEmailCategory(account_id, emailId, newCategoryId)
-      await fetchMails() // Refresh emails after changing category
+      await fetchMailsSilently()
       console.log(`✅ Email ${emailId} category updated to ${newCategoryId}`)
 
-      // Find the category name for the toast
       const categoryName = categories?.find(cat => cat._id === newCategoryId)?.name || "Unknown"
 
-      // Success toast
       toast.success("Category updated successfully!", {
         description: `Email moved to "${categoryName}" category`
       })
     } catch (err) {
       console.error(`❌ Failed to change category for email ${emailId}:`, err)
 
-      // Error toast
       toast.error("Failed to update category", {
         description: "There was an error updating the email category. Please try again."
       })
     } finally {
-      // Clear loading state
       setChangingCategoryForEmail(null)
     }
   }
@@ -185,9 +186,8 @@ export function EmailSidebar() {
 
       const allEmails = await getAllEmails();
       setEmails(allEmails || []);
-      console.log("📥 All emails fetched and set.");
+      console.log("All emails fetched and set.");
 
-      // Success toast for inbox refresh
       if (failCount === 0) {
         toast.success("Inbox refreshed successfully!", {
           description: `Refreshed ${successCount} inbox${successCount !== 1 ? 'es' : ''}`
@@ -228,7 +228,6 @@ export function EmailSidebar() {
         )
       } catch (err) {
         console.error("Error marking email as read:", err)
-        // Optional: Add toast for mark as read errors
         toast.error("Failed to mark email as read", {
           description: "The email content will still be displayed."
         })
@@ -276,14 +275,13 @@ export function EmailSidebar() {
         </div>
 
         <div className="flex-1 overflow-y-auto">
-          {/* Show loading spinner only when actually loading */}
           {isLoading && (
             <div className="h-full w-full flex items-center justify-center">
               <div className="animate-spin rounded-full h-6 w-6 border-2 border-muted-foreground border-t-transparent" />
             </div>
           )}
 
-          {/* Show "no emails found" when not loading and no emails with filters */}
+
           {!isLoading && emails.length > 0 && filteredEmails.length === 0 && (categoryParam || labelParam) && (
             <div className="h-full w-full flex items-center justify-center">
               <div className="text-center text-muted-foreground">
@@ -293,7 +291,7 @@ export function EmailSidebar() {
             </div>
           )}
 
-          {/* Show "no emails found" when not loading and truly no emails */}
+
           {!isLoading && emails.length === 0 && (
             <div className="h-full w-full flex items-center justify-center">
               <div className="text-center text-muted-foreground">
@@ -303,7 +301,7 @@ export function EmailSidebar() {
             </div>
           )}
 
-          {/* Render emails when not loading and emails exist */}
+
           {!isLoading && filteredEmails.length > 0 && (
             <div className="p-2">
               {filteredEmails?.map((email) => {
