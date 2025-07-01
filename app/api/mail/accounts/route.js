@@ -14,8 +14,7 @@ export async function GET(request) {
 
         const userId = authResult.user.userId
 
-        // Fetch all Gmail accounts linked to this user
-        const gmailAccounts = await GmailAccount.find({ user: userId }).select('-accessToken -refreshToken') // Exclude tokens
+        const gmailAccounts = await GmailAccount.find({ user: userId }).select('-accessToken -refreshToken')
 
         return NextResponse.json({
             data: gmailAccounts,

@@ -5,7 +5,7 @@ import InboxMail from '@/models/InboxMail'
 import Task from '@/models/Task'
 import dbConnect from '@/lib/db'
 import { validateAuth } from '@/lib/auth'
-import { convertEmailToTask } from '@/services/ai/emailToTask' // <- ✅ you must export it from your Gemini script
+import { convertEmailToTask } from '@/services/ai/emailToTask'
 
 export async function POST(request, { params }) {
     await dbConnect()

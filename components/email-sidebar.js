@@ -18,7 +18,7 @@ export function EmailSidebar() {
   const [emailDetailOpen, setEmailDetailOpen] = useState(false)
   const [selectedEmailForDetail, setSelectedEmailForDetail] = useState(null)
   const [isRefreshing, setIsRefreshing] = useState(false)
-  const [isLoading, setIsLoading] = useState(true) // Add loading state
+  const [isLoading, setIsLoading] = useState(true)
   const [changingCategoryForEmail, setChangingCategoryForEmail] = useState(null)
   const [convertingToTaskForEmail, setConvertingToTaskForEmail] = useState(null)
   const { emails, setEmails, categories, mailAccounts, tasks, setTasks } = useMail()
@@ -111,14 +111,14 @@ export function EmailSidebar() {
     try {
       console.log("Creating todo from email:", email?.subject)
       const newTask = await convertMailToTask(email?.gmailAccount, email?.messageId)
-      console.log(`✅ Email ${email?.messageId} converted to task successfully`)
+      console.log(`Email ${email?.messageId} converted to task successfully`)
       setTasks([...tasks, newTask])
 
       toast.success("Todo created successfully!", {
         description: `Created todo from "${email?.subject}"`
       })
     } catch (err) {
-      console.error(`❌ Failed to convert email ${email?.messageId} to task:`, err)
+      console.error(`Failed to convert email ${email?.messageId} to task:`, err)
 
       toast.error("Failed to create todo", {
         description: "There was an error converting the email to a todo. Please try again."
@@ -148,15 +148,15 @@ export function EmailSidebar() {
     try {
       await changeEmailCategory(account_id, emailId, newCategoryId)
       await fetchMailsSilently()
-      console.log(`✅ Email ${emailId} category updated to ${newCategoryId}`)
+      console.log(`Email ${emailId} category updated to ${newCategoryId}`)
 
-      const categoryName = categories?.find(cat => cat._id === newCategoryId)?.name || "Unknown"
+      const categoryName = categories?.find(cat => cat._id === newCategoryId)?.name || "Unknown Category"
 
       toast.success("Category updated successfully!", {
         description: `Email moved to "${categoryName}" category`
       })
     } catch (err) {
-      console.error(`❌ Failed to change category for email ${emailId}:`, err)
+      console.error(`Failed to change category for email ${emailId}:`, err)
 
       toast.error("Failed to update category", {
         description: "There was an error updating the email category. Please try again."
@@ -175,8 +175,8 @@ export function EmailSidebar() {
       const results = await Promise.allSettled(
         mailAccounts.map((mail) =>
           getInboxEmails(mail.id)
-            .then(() => console.log(`✅ Inbox fetched for: ${mail.id}`))
-            .catch((err) => console.error(`❌ Failed for: ${mail.id}`, err))
+            .then(() => console.log(`Inbox fetched for: ${mail.id}`))
+            .catch((err) => console.error(`Failed for: ${mail.id}`, err))
         )
       );
 

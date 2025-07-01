@@ -21,16 +21,12 @@ export default function LoginLayout({ children }) {
                 const { user, error } = await getAuth()
 
                 if (user && !error) {
-                    // User is authenticated, redirect to dashboard
                     router.push('/dashboard')
                     return
                 }
-
-                // User is not authenticated, allow access to login page
                 setIsAuthenticated(false)
             } catch (error) {
                 console.error('Auth check failed:', error)
-                // If auth check fails, assume user is not authenticated
                 setIsAuthenticated(false)
             } finally {
                 setIsLoading(false)
@@ -44,14 +40,12 @@ export default function LoginLayout({ children }) {
         return (
             <div className="min-h-screen bg-black flex items-center justify-center w-screen">
                 <div className="h-full w-full flex items-center justify-center">
-                    {/* Minimal spinner: just a spinning border */}
                     <div className="animate-spin rounded-full h-6 w-6 border-2 border-muted-foreground border-t-transparent" />
                 </div>
             </div>
         )
     }
 
-    // Only render children if user is not authenticated
     return (
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
             {children}

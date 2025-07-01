@@ -1,6 +1,6 @@
 // app/api/generate-email/route.js
 import { NextResponse } from "next/server"
-import { generateEmailBody } from "@/services/ai/emailGenerator" // adjust import based on your project structure
+import { generateEmailBody } from "@/services/ai/emailGenerator"
 
 export async function POST(request) {
     try {

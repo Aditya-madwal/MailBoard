@@ -21,21 +21,21 @@ const suggestedCategories = [
     { name: "Travel", color: "bg-purple-500" },
     { name: "Shopping", color: "bg-pink-500" },
     { name: "Health", color: "bg-red-500" },
-    { name: "Education", color: "bg-indigo-500" },
+    { name: "Education", color: "bg-teal-500" },
     { name: "Social", color: "bg-cyan-500" },
 ]
 
 const colorOptions = [
+    "bg-red-500",
     "bg-blue-500",
     "bg-green-500",
     "bg-yellow-500",
     "bg-purple-500",
     "bg-pink-500",
-    "bg-red-500",
+    "bg-gray-500",
     "bg-orange-500",
-    "bg-indigo-500",
-    "bg-teal-500",
     "bg-cyan-500",
+    "bg-teal-500"
 ]
 
 export function CategoryOnboardingModal({ open, onOpenChange, onComplete }) {
@@ -67,7 +67,6 @@ export function CategoryOnboardingModal({ open, onOpenChange, onComplete }) {
     }
 
     const handleComplete = () => {
-        // Here you would save the categories to your state/database
         console.log("Selected categories:", selectedCategories)
         onComplete(selectedCategories)
         onOpenChange(false)

@@ -34,7 +34,7 @@ export async function registerUser(userData) {
 export async function logoutUser() {
     try {
         const response = await axios.post(`${BASE_URL}/api/auth/logout`, {}, {
-            withCredentials: true // Important: Include cookies in the request
+            withCredentials: true
         })
         return response.data
     } catch (err) {

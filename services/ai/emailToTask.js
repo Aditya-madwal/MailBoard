@@ -1,10 +1,8 @@
 import { GoogleGenerativeAI } from '@google/generative-ai'
 
-// Load your Gemini API key
 const API_KEY = process.env.GEMINI_API_KEY
 const genAI = new GoogleGenerativeAI(API_KEY)
 
-// Define response schema for task object
 const taskResponseSchema = {
     type: "OBJECT",
     properties: {
@@ -38,7 +36,6 @@ const taskResponseSchema = {
     required: ["title", "description", "tags", "relatedLinks"]
 }
 
-// Utility: create a structured prompt for email to task conversion
 function buildEmailToTaskPrompt(email) {
     return `
 You are an intelligent task management assistant. Convert the following email into a structured task object.
@@ -69,7 +66,6 @@ Guidelines:
 `
 }
 
-// Convert email to task using Gemini API
 export async function convertEmailToTask(email) {
     const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
 
@@ -87,18 +83,14 @@ export async function convertEmailToTask(email) {
         const response = await result.response
         const text = response.text().trim()
 
-        // Parse the JSON response
         const taskObject = JSON.parse(text)
 
-        // Validate required fields
         if (taskObject.title && taskObject.description &&
             Array.isArray(taskObject.tags) && Array.isArray(taskObject.relatedLinks)) {
 
-            // Clean up dueDate - remove if empty or invalid
             if (!taskObject.dueDate || taskObject.dueDate.trim() === "") {
                 delete taskObject.dueDate
             } else {
-                // Validate ISO date format
                 try {
                     new Date(taskObject.dueDate).toISOString()
                 } catch (e) {
@@ -114,7 +106,6 @@ export async function convertEmailToTask(email) {
     } catch (err) {
         console.error("Email to Task conversion failed:", err)
 
-        // Fallback task object
         return {
             title: `Follow up: ${email.subject}`,
             description: `Review email from ${email.senderName} (${email.senderEmail}) regarding: ${email.snippet}`,
@@ -124,7 +115,6 @@ export async function convertEmailToTask(email) {
     }
 }
 
-// Batch convert multiple emails to tasks
 export async function convertEmailsToTasks(emails) {
     const tasks = []
 
@@ -132,7 +122,6 @@ export async function convertEmailsToTasks(emails) {
         const task = await convertEmailToTask(email)
         tasks.push(task)
 
-        // Add small delay to avoid rate limiting
         await new Promise(resolve => setTimeout(resolve, 100))
     }
 
@@ -170,7 +159,6 @@ const testEmails = [
     }
 ]
 
-// Test the conversion
 async function testEmailToTaskConversion() {
     console.log("Converting emails to tasks...\n")
 
@@ -184,5 +172,4 @@ async function testEmailToTaskConversion() {
     }
 }
 
-// Run test
 // testEmailToTaskConversion()

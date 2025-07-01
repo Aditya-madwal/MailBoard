@@ -41,7 +41,6 @@ export const EmailDetailModal = ({ email: initialEmail, open, onOpenChange }) =>
                 return
             }
 
-            // If email doesn't have body and we have the required data to fetch it
             if (!initialEmail?.body && initialEmail?.messageId && initialEmail?.gmailAccount) {
                 setLoading(true)
                 setEmail(null)
@@ -56,20 +55,17 @@ export const EmailDetailModal = ({ email: initialEmail, open, onOpenChange }) =>
                         setIsStarred(data.isStarred || false)
                     } else {
                         setError(data.error || "Failed to fetch email")
-                        // Fallback to initial email if API fails
                         setEmail(initialEmail)
                         setIsStarred(initialEmail?.isStarred || false)
                     }
                 } catch (error) {
                     setError(error.message)
-                    // Fallback to initial email if API fails
                     setEmail(initialEmail)
                     setIsStarred(initialEmail?.isStarred || false)
                 } finally {
                     setLoading(false)
                 }
             } else {
-                // Use the initial email data if it already has body or required fields are missing
                 setEmail(initialEmail)
                 setIsStarred(initialEmail?.isStarred || false)
                 setError(null)
@@ -100,23 +96,20 @@ export const EmailDetailModal = ({ email: initialEmail, open, onOpenChange }) =>
     }, [email, mailAccounts]);
 
     const createTodo = async (email) => {
-        // Set loading state for todo conversion
         setIsConvertingToTask(true)
 
         try {
             console.log("Creating todo from email:", email?.subject)
             const newTask = await convertMailToTask(email?.gmailAccount, email?.messageId)
-            console.log(`✅ Email ${email?.messageId} converted to task successfully`)
+            console.log(`Email ${email?.messageId} converted to task successfully`)
             setTasks([...tasks, newTask])
         } catch (err) {
-            console.error(`❌ Failed to convert email ${email?.messageId} to task:`, err)
+            console.error(`Failed to convert email ${email?.messageId} to task:`, err)
         } finally {
-            // Clear loading state
             setIsConvertingToTask(false)
         }
     }
 
-    // Don't render anything if modal is not open
     if (!open) return null
 
     const getCategoryDetails = (categoryId) => categories?.find((cat) => cat._id === categoryId)
@@ -141,7 +134,6 @@ export const EmailDetailModal = ({ email: initialEmail, open, onOpenChange }) =>
 
     const category = email?.UserCategory ? getCategoryDetails(email.UserCategory) : null
 
-    // Helper function to render recipient list
     const renderRecipientList = (recipients, label) => {
         if (!recipients || recipients.length === 0) return null
 

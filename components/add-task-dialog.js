@@ -159,53 +159,6 @@ export function AddTaskDialog({ open, onOpenChange }) {
 
           {/* Assignee and Due Date */}
           <div className="grid grid-cols-2 gap-4">
-            {/* <div className="space-y-2">
-              <Label>Assignee</Label>
-              <Select
-                value={formData.assignee}
-                onValueChange={(value) => setFormData((prev) => ({ ...prev, assignee: value }))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select assignee">
-                    {selectedAssignee && (
-                      <div className="flex items-center gap-2">
-                        <Avatar className="h-5 w-5">
-                          <AvatarImage src={selectedAssignee.avatar || "/placeholder.svg"} />
-                          <AvatarFallback className="text-xs">
-                            {selectedAssignee.name
-                              .split(" ")
-                              .map((n) => n[0])
-                              .join("")}
-                          </AvatarFallback>
-                        </Avatar>
-                        <span>{selectedAssignee.name}</span>
-                      </div>
-                    )}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  {assignees.map((assignee) => (
-                    <SelectItem key={assignee.id} value={assignee.id.toString()}>
-                      <div className="flex items-center gap-2">
-                        <Avatar className="h-5 w-5">
-                          <AvatarImage src={assignee.avatar || "/placeholder.svg"} />
-                          <AvatarFallback className="text-xs">
-                            {assignee.name
-                              .split(" ")
-                              .map((n) => n[0])
-                              .join("")}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex flex-col">
-                          <span className="text-sm">{assignee.name}</span>
-                          <span className="text-xs text-muted-foreground">{assignee.email}</span>
-                        </div>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div> */}
 
             <div className="space-y-2">
               <Label htmlFor="dueDate">Due Date</Label>

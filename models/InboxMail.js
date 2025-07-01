@@ -1,5 +1,3 @@
-// models/InboxMail.js
-
 import mongoose from "mongoose";
 
 const inboxMailSchema = new mongoose.Schema(
@@ -13,8 +11,8 @@ const inboxMailSchema = new mongoose.Schema(
         from: { type: String },
         to: { type: String },
 
-        cc: [{ type: String }],     // ✅ now array
-        bcc: [{ type: String }],    // ✅ now array
+        cc: [{ type: String }],
+        bcc: [{ type: String }],
 
         date: {
             type: Date
@@ -39,7 +37,6 @@ const inboxMailSchema = new mongoose.Schema(
             default: 'primary'
         },
 
-        // ✅ One user-defined category per email
         UserCategory: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'UserCategory',

@@ -84,15 +84,12 @@ export async function GET(request, { params }) {
         }
         findAttachments(parts)
 
-        // Extract body content - handle nested multipart structure
         const extractBodyFromParts = (partList) => {
             for (const part of partList) {
-                // If this part has nested parts, recurse
                 if (part.parts && part.parts.length > 0) {
                     const nestedBody = extractBodyFromParts(part.parts)
                     if (nestedBody) return nestedBody
                 }
-                // Check if this part contains body content
                 else if (part.body?.data && (part.mimeType === 'text/plain' || part.mimeType === 'text/html')) {
                     return part.body.data
                 }
@@ -102,12 +99,10 @@ export async function GET(request, { params }) {
 
         let encodedBody = ''
 
-        // Try to extract body from parts first
         if (parts.length > 0) {
             encodedBody = extractBodyFromParts(parts) || ''
         }
 
-        // Fallback to payload body if no parts or no body found in parts
         if (!encodedBody && payload.body?.data) {
             encodedBody = payload.body.data
         }
@@ -117,7 +112,6 @@ export async function GET(request, { params }) {
         const isUnread = detail.data.labelIds?.includes('UNREAD')
         const labelIds = detail.data.labelIds || []
 
-        // Convert CC and BCC to arrays
         const parseEmailList = (str) => str ? str.split(',').map(e => e.trim()) : []
         const ccList = parseEmailList(cc)
         const bccList = parseEmailList(bcc)

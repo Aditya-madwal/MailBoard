@@ -1,10 +1,8 @@
 import { GoogleGenerativeAI } from '@google/generative-ai'
 
-// Load your Gemini API key
 const API_KEY = process.env.GEMINI_API_KEY
 const genAI = new GoogleGenerativeAI(API_KEY)
 
-// Define response schema for strict JSON format
 const responseSchema = {
     type: "ARRAY",
     items: {
@@ -12,7 +10,6 @@ const responseSchema = {
     }
 }
 
-// Utility: create a structured prompt for batch processing
 function buildBatchPrompt(emails, categories) {
     const categoryList = categories.join(', ')
     let prompt = `
@@ -41,7 +38,6 @@ Email ${index + 1}:
     return prompt
 }
 
-// Categorize emails in a single Gemini API call with schema validation
 export async function categorizeEmails(emails, categories) {
     const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
 
@@ -61,7 +57,7 @@ export async function categorizeEmails(emails, categories) {
 
         // Parse the JSON response
         const parsed = JSON.parse(text)
-        console.log("AI Response:", parsed) // Debug log
+        console.log("AI Response:", parsed)
 
         // Validate that we got the expected number of categories
         if (Array.isArray(parsed) && parsed.length === emails.length) {

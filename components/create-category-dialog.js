@@ -39,18 +39,14 @@ export function CreateCategoryDialog({ open, onOpenChange }) {
     const handleSubmit = async (e) => {
         e.preventDefault()
         if (categoryName.trim()) {
-            // Here you would typically add the category to your state/database
             try {
-                // Call the API to create the category
                 const response = await createCategory({
                     name: categoryName,
                     color: selectedColor
                 }).then((res) => setCategories((prev) => [...prev, res?.category]))
                 toast.success("Category created successfully!")
-                // Reset form
                 setCategoryName("")
                 setSelectedColor("bg-blue-500")
-                // Close dialog
                 onOpenChange(false)
             } catch (error) {
                 toast.error("Failed to create category. Please try again.")

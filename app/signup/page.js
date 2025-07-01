@@ -38,14 +38,12 @@ export default function SignupPage() {
     e.preventDefault()
     setIsLoading(true)
 
-    // Client-side validation
     if (formData.password !== formData.confirmPassword) {
       toast.error("Passwords do not match")
       setIsLoading(false)
       return
     }
 
-    // Show loading toast
     const loadingToast = toast.loading("Creating your account...")
 
     try {
@@ -57,24 +55,19 @@ export default function SignupPage() {
 
       const data = await registerUser(registrationData)
 
-      // Dismiss loading toast
       toast.dismiss(loadingToast)
 
-      // Show success toast
       toast.success("Account created successfully! Redirecting to login...")
 
-      // Redirect to login after a short delay
       setTimeout(() => {
         router.push('/login')
-      }, 1500)
+      }, 1000)
 
       console.log("Registration successful, redirecting to login...")
 
     } catch (error) {
-      // Dismiss loading toast
       toast.dismiss(loadingToast)
 
-      // Show error toast
       toast.error(error.message || 'Something went wrong during registration')
 
       console.error('Registration error:', error)

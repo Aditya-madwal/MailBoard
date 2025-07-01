@@ -33,7 +33,6 @@ export default function LoginPage() {
     e.preventDefault()
     setIsLoading(true)
 
-    // Show loading toast
     const loadingToast = toast.loading("Signing you in...")
 
     try {
@@ -42,31 +41,21 @@ export default function LoginPage() {
         password: formData.password
       })
 
-      // Dismiss loading toast
       toast.dismiss(loadingToast)
 
-      // Show success toast
       toast.success("Login successful! Welcome back.")
 
-      // Redirect to dashboard after a short delay
       setTimeout(() => {
         router.push("/dashboard")
       }, 1000)
 
     } catch (error) {
-      // Dismiss loading toast
       toast.dismiss(loadingToast)
 
-      // Show error toast
       toast.error(error.message || 'An error occurred during login')
     } finally {
       setIsLoading(false)
     }
-  }
-
-  const handleGoogleLogin = () => {
-    toast("Google login coming soon!", { icon: "🚀" })
-    // Implement Google OAuth logic here
   }
 
   return (

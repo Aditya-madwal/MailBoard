@@ -13,7 +13,7 @@ export async function getValidOAuthClient(mail_id) {
     const now = Date.now()
     const expiry = gmailAccount.tokenExpiryDate?.getTime() || 0
 
-    // ✅ Set credentials first
+    // Set credentials first
     oauth2Client.setCredentials({
         access_token: gmailAccount.accessToken,
         refresh_token: gmailAccount.refreshToken,

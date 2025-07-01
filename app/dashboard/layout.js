@@ -4,13 +4,11 @@ import '../globals.css'
 import axios from 'axios'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-// import { createContext, useContext } from 'react'
 import { Inter } from "next/font/google"
 import { ThemeProvider } from "@/components/theme-provider"
 import { SidebarProvider } from "@/components/ui/sidebar"
 
 const inter = Inter({ subsets: ["latin"] })
-// const AuthContext = createContext({ user: null, setUser: null })
 
 export default function DashboardLayout({ children }) {
     const router = useRouter()
@@ -28,7 +26,7 @@ export default function DashboardLayout({ children }) {
                     return
                 }
 
-                setUser(user.user) // assuming your API returns { user: { ... } }
+                setUser(user.user)
             } catch (error) {
                 console.error('Auth check failed:', error)
                 router.push('/login')
@@ -44,7 +42,6 @@ export default function DashboardLayout({ children }) {
         return (
             <div className="min-h-screen bg-black flex items-center justify-center w-screen">
                 <div className="h-full w-full flex items-center justify-center">
-                    {/* Minimal spinner: just a spinning border */}
                     <div className="animate-spin rounded-full h-6 w-6 border-2 border-muted-foreground border-t-transparent" />
                 </div>
             </div>

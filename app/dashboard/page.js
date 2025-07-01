@@ -39,7 +39,7 @@ export default function Dashboard() {
             <AppSidebar />
             <SidebarInset className="flex flex-col h-screen overflow-hidden">
                 {/* Header - Fixed at top */}
-                <div className="fixed top-0 right-0 z-50 bg-background border-b transition-all duration-200 left-0 md:left-[var(--sidebar-width)] w-screen md:w-[calc(100vw-var(--sidebar-width))]">
+                <div className="fixed top-0 right-0 z-50 bg-background border-b transition-all duration-200 left-0 md:left-[var(--sidebar-width)] w-screen md:w-[calc(100vw-var(--sidebar-width))]" style={open ? { '--sidebar-width': '16rem' } : { '--sidebar-width': '0px' }}>
                     <Header onToggleTodoBoard={() => setShowTodoBoard(!showTodoBoard)} showTodoBoard={showTodoBoard} />
                 </div>
 
@@ -52,7 +52,7 @@ export default function Dashboard() {
               ${isMobile ? 'w-full' : 'w-[320px]'} 
               left-0 md:left-[var(--sidebar-width)]
               ${isMobile && showTodoBoard ? 'hidden' : 'block'}
-            `}
+            `} style={open ? { '--sidebar-width': '16rem' } : { '--sidebar-width': '0px' }}
                     >
                         <EmailSidebar />
                     </div>
@@ -67,7 +67,7 @@ export default function Dashboard() {
                                 'left-[320px] md:left-[calc(320px+var(--sidebar-width))]'
                             }
               ${!isMobile || showTodoBoard ? 'block' : 'hidden'}
-            `}
+            `} style={open ? { '--sidebar-width': '16rem' } : { '--sidebar-width': '0px' }}
                     >
                         <TodoKanban />
                     </div>

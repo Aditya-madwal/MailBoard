@@ -28,7 +28,7 @@ export async function POST(request, { params }) {
                 .split(',')
                 .map((email) => email.trim())
                 .filter((email) => !!email)
-                .join(',') // ensures clean formatting for Gmail headers
+                .join(',')
 
         const to = normalizeEmails(formData.get('to') || '')
         const cc = normalizeEmails(formData.get('cc') || '')

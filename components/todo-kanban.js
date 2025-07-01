@@ -79,7 +79,6 @@ export function TodoKanban() {
     }
   };
   const delete_Task = async (taskId) => {
-    // alert("djbwedjb")
     const deleted = await deleteTask(taskId);
     if (deleted) {
       fetchTasks();

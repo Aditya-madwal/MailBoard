@@ -12,11 +12,10 @@ export async function POST(request) {
     const body = await request.json()
     const { email, password } = body
 
-    // Validate input
     const emailValidation = validateEmail(email)
     if (!emailValidation.isValid) {
       return NextResponse.json(
-        { message: 'Invalid credentials' }, // Don't reveal specific validation errors for security
+        { message: 'Invalid credentials' },
         { status: 401 }
       )
     }
@@ -82,51 +81,3 @@ export async function POST(request) {
     )
   }
 }
-
-// import { NextResponse } from "next/server";
-// import { sign } from "jsonwebtoken";
-// import { serialize } from "cookie";
-
-// const MAX_AGE = 60 * 60 * 24;
-
-// export async function POST(request) {
-//   const body = await request.json();
-//   const { username, password } = body;
-
-//   if (username != "admin" || password != "admin") {
-//     return NextResponse.json(
-//       { message: 'Invalid credentials' },
-//       { status: 401 }
-//     )
-//   }
-
-//   const secret = process.env.JWT_SECRET || "";
-
-//   const token = sign(
-//     { username },
-//     secret, {
-//     expiresIn: MAX_AGE,
-//   });
-
-//   const serialized = serialize(
-//     "OursiteJWT",
-//     token,
-//     {
-//       maxAge: MAX_AGE,
-//       httpOnly: true,
-//       secure: process.env.NODE_ENV === "production",
-//       sameSite: "strict",
-//       path: "/"
-//     });
-
-//   const response = new Response(
-//     JSON.stringify({ message: "Login successful" }),
-//     {
-//       status: 200,
-//       headers: { "Set-Cookie": serialized }
-//     },
-//   )
-
-//   return response;
-
-// }

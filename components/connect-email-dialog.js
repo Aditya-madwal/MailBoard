@@ -10,16 +10,6 @@ export function ConnectEmailDialog({ open, onOpenChange }) {
   const [step, setStep] = useState("select")
   const [selectedProvider, setSelectedProvider] = useState("")
 
-  const handleConnect = () => {
-    setSelectedProvider("gmail")
-    setStep("oauth")
-
-    // Simulate OAuth flow
-    setTimeout(() => {
-      setStep("success")
-    }, 2000)
-  }
-
   const handleClose = () => {
     setStep("select")
     setSelectedProvider("")

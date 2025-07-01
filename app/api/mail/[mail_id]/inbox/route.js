@@ -7,7 +7,6 @@ import { validateAuth } from '@/lib/auth'
 import { NextResponse } from 'next/server'
 import { getValidOAuthClient } from '@/services/mail/getValidOAuthClient'
 import InboxMail from '@/models/InboxMail'
-// import categorizeEmails from '@services/ai/emailCategorizer'
 import { categorizeEmails } from '@/services/ai/emailCategorizer'
 import UserCategory from '@/models/UserCategory'
 
@@ -32,8 +31,6 @@ export async function GET(request, { params }) {
             return NextResponse.json({ error: 'Gmail account not found or unauthorized' }, { status: 403 })
         }
 
-        // return NextResponse.json(gmailAccount)
-
         const gmail = google.gmail({ version: 'v1', auth: oauth2Client })
         const people = google.people({ version: 'v1', auth: oauth2Client })
 
@@ -44,7 +41,6 @@ export async function GET(request, { params }) {
 
         const messageIds = allMailsRes.data.messages || []
 
-        // Step 1: Fetch and save all emails to database first
         const detailedMessages = await Promise.all(
             messageIds.map(async (msg) => {
                 const detail = await gmail.users.messages.get({
@@ -79,7 +75,7 @@ export async function GET(request, { params }) {
                         senderPicture = contact.data.results[0].person.photos[0].url
                     }
                 } catch (err) {
-                    // Silently handle contact photo fetch errors
+                    // nothing
                 }
 
                 // Extract attachments
@@ -146,8 +142,6 @@ export async function GET(request, { params }) {
                 const ccList = parseEmailList(cc)
                 const bccList = parseEmailList(bcc)
 
-                // Save to database with UserCategory initially null
-                // Only update if iscategorized is false or not set
                 const existingMail = await InboxMail.findOne({ messageId: detail.data.id, user: authResult.user.userId })
                 let savedMail
                 if (!existingMail || existingMail.UserCategory == null) {
@@ -200,33 +194,12 @@ export async function GET(request, { params }) {
                     labelIds,
                     gmailCategory,
                     user: authResult.user.userId,
-                    _id: savedMail._id // Include database ID for later updates
+                    _id: savedMail._id
                 }
             })
         )
 
-        // Step 2: Prepare data for AI categorization (without body content)
-        // const emailsForAI = detailedMessages
-        //     .filter(msg => msg.UserCategory == null)
-        //     .map(msg => ({
-        //         id: msg.id,
-        //         snippet: msg.snippet,
-        //         subject: msg.subject,
-        //         senderName: msg.senderName,
-        //         senderEmail: msg.senderEmail,
-        //         gmailCategory: msg.gmailCategory
-        //     }))
-        // const emailsForAI = detailedMessages
-        //     .filter(msg => msg.UserCategory == null)
-        //     .map(msg => ({
-        //         id: msg.id,
-        //         snippet: msg.snippet,
-        //         subject: msg.subject,
-        //         senderName: msg.senderName,
-        //         senderEmail: msg.senderEmail,
-        //         gmailCategory: msg.gmailCategory
-        //     }))
-
+        // preparing data for categorization
         const latestmails = await InboxMail.find({ user: authResult.user.userId, gmailAccount: gmailAccount._id }).sort({ date: -1 }).limit(50)
         const latestUncategorizedMails = latestmails.filter(mail => mail.UserCategory == null).map(mail => ({
             id: mail.messageId,
@@ -238,7 +211,6 @@ export async function GET(request, { params }) {
         }))
         console.log('Latest mails:', latestUncategorizedMails.length)
 
-        // Step 3: Run AI categorization
         const userCategoriesObj = await UserCategory.find({ user: authResult.user.userId })
         const userCategories = userCategoriesObj.map(cat => cat.name)
 
@@ -250,25 +222,9 @@ export async function GET(request, { params }) {
                 console.log('Running AI categorization for', latestUncategorizedMails.length, 'emails...among : ', userCategories)
                 const predictedCategories = await categorizeEmails(latestUncategorizedMails, userCategories)
 
-                // Step 4: Update database with predicted categories
-                // const updatePromises = latestUncategorizedMails.map(async (msg, index) => {
-                //     const predictedCategory = predictedCategories[index] || null
-
-                //     await InboxMail.findOneAndUpdate(
-                //         { messageId: msg.id, user: authResult.user.userId },
-                //         { UserCategory: userCategoriesObj.find(cat => cat.name.toLowerCase() === predictedCategory.toLowerCase())?.id || null },
-                //         { new: true }
-                //     )
-
-                //     // Add predicted category to response
-                //     msg.UserCategory = userCategoriesObj.find(cat => cat.name.toLowerCase() === predictedCategory.toLowerCase())?.id || null
-                //     return msg
-                // })
-                // In your inbox route, after AI categorization
                 const updatePromises = latestUncategorizedMails.map(async (msg, index) => {
                     const predictedCategory = predictedCategories[index] || 'Uncategorized'
 
-                    // Find the category ID, handle uncategorized case
                     let categoryId = null
                     if (predictedCategory !== 'Uncategorized') {
                         categoryId = userCategoriesObj.find(cat =>
@@ -293,7 +249,6 @@ export async function GET(request, { params }) {
 
             } catch (aiError) {
                 console.error('AI categorization failed:', aiError)
-                // Return messages without AI categories if AI fails
                 const messagesWithFallback = latestUncategorizedMails.map(msg => ({
                     ...msg,
                     UserCategory: null

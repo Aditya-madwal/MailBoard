@@ -99,8 +99,6 @@ export function AppSidebar() {
         console.log('Fetching categories...')
         const fetchedCategories = await getAllCategories()
         console.log('Fetched categories:', fetchedCategories)
-
-        // Fix the logic here - the issue was with the .then() callback
         if (fetchedCategories.length === 0) {
           setCategoryOnboardingOpen(true)
         }
@@ -144,20 +142,12 @@ export function AppSidebar() {
   const handleLogout = async () => {
     try {
       await logoutUser()
-      localStorage.clear()
-      sessionStorage.clear()
       document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Strict'
-      document.cookie = 'refreshToken=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Strict'
-      document.cookie = 'session=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Strict'
       toast.success("Logged out successfully")
       router.push('/login')
     } catch (error) {
       console.error("Logout error:", error)
-      localStorage.clear()
-      sessionStorage.clear()
       document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Strict'
-      document.cookie = 'refreshToken=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Strict'
-      document.cookie = 'session=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Strict'
       toast.success("Logged out successfully")
       router.push('/login')
     }
@@ -172,7 +162,6 @@ export function AppSidebar() {
     handleLogout()
   }
 
-  // Add better filtering for categories
   const validCategories = categories?.filter(c => c && c.name && c._id) || []
   console.log('Valid categories to render:', validCategories)
 
@@ -233,7 +222,6 @@ export function AppSidebar() {
             </div>
             <SidebarGroupContent>
               <SidebarMenu>
-                {/* Add debug info */}
                 {!categoriesLoaded && (
                   <div className="flex flex-col items-center justify-center p-4 text-muted-foreground">
                     <p className="text-sm font-medium">Loading categories...</p>

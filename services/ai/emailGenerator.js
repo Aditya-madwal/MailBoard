@@ -1,10 +1,8 @@
 import { GoogleGenerativeAI } from '@google/generative-ai'
 
-// Load your Gemini API key
 const API_KEY = process.env.GEMINI_API_KEY
 const genAI = new GoogleGenerativeAI(API_KEY)
 
-// Generic email templates for fallback
 const FALLBACK_TEMPLATES = {
     default: `Dear [RECIPIENT NAME],
 
@@ -42,7 +40,6 @@ Best regards,
 [YOUR NAME]`
 }
 
-// Utility: validate email body meets minimum requirements
 function validateEmailBody(body) {
     if (!body || typeof body !== 'string') {
         return { valid: false, reason: 'Empty or invalid body' }
@@ -62,7 +59,6 @@ function validateEmailBody(body) {
     return { valid: true, wordCount }
 }
 
-// Utility: determine fallback template based on subject
 function selectFallbackTemplate(subject) {
     const subjectLower = subject.toLowerCase()
 
@@ -75,7 +71,6 @@ function selectFallbackTemplate(subject) {
     return FALLBACK_TEMPLATES.default
 }
 
-// Utility: create a structured prompt for email body generation
 function buildEmailBodyPrompt(subject, attempt = 1) {
     const additionalInstructions = attempt > 1 ?
         `\n\nIMPORTANT: This is attempt ${attempt}. Please generate a COMPLETE and DETAILED email body with at least 30 words. The previous attempt was too short or incomplete.` : ''
@@ -97,7 +92,6 @@ Generate the email body:
 `
 }
 
-// Generate email body using Gemini API with retry logic
 export async function generateEmailBody(subject, maxRetries = 3) {
     const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
 
@@ -110,7 +104,7 @@ export async function generateEmailBody(subject, maxRetries = 3) {
                 generationConfig: {
                     responseMimeType: "text/plain",
                     temperature: 0.7,
-                    maxOutputTokens: 600, // Increased for longer responses
+                    maxOutputTokens: 600,
                     topP: 0.8,
                     topK: 40
                 }
@@ -119,7 +113,6 @@ export async function generateEmailBody(subject, maxRetries = 3) {
             const response = result.response
             const emailBody = response.text().trim()
 
-            // Validate the generated email body
             const validation = validateEmailBody(emailBody)
 
             if (validation.valid) {
@@ -141,40 +134,7 @@ export async function generateEmailBody(subject, maxRetries = 3) {
         }
     }
 
-    // If all attempts failed, return fallback template
     const fallbackTemplate = selectFallbackTemplate(subject)
 
     return fallbackTemplate
 }
-
-// // Enhanced test function with detailed output
-// export async function testEmailGeneration(subject) {
-//     console.log(`\n🚀 Testing email generation for: "${subject}"`)
-//     console.log('='.repeat(60))
-
-//     const result = await generateEmailBody(subject)
-
-//     console.log('\n📊 RESULT:')
-//     console.log(`Success: ${result.success}`)
-//     console.log(`Source: ${result.source}`)
-//     console.log(`Attempts: ${result.attempt}`)
-//     console.log(`Word Count: ${result.wordCount}`)
-//     if (result.message) console.log(`Message: ${result.message}`)
-
-//     console.log('\n📧 GENERATED EMAIL BODY:')
-//     console.log('-'.repeat(40))
-//     console.log(result.body)
-//     console.log('-'.repeat(40))
-
-//     return result
-// }
-
-// // Example usage (uncomment to test):
-
-// testEmailGeneration("Follow up on our meeting yesterday").then(result => {
-//     // Result will contain success status, body, attempts, etc.
-// })
-
-// testEmailGeneration("Requesting information about your services").then(result => {
-//     // Another test
-// })
