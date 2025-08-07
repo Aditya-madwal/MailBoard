@@ -21,7 +21,7 @@ export function EmailSidebar() {
   const [isLoading, setIsLoading] = useState(true)
   const [changingCategoryForEmail, setChangingCategoryForEmail] = useState(null)
   const [convertingToTaskForEmail, setConvertingToTaskForEmail] = useState(null)
-  const { emails, setEmails, categories, mailAccounts, tasks, setTasks } = useMail()
+  const { emails, setEmails, categories, mailAccounts, tasks, setTasks, fetchTasks } = useMail()
 
   const searchParams = useSearchParams()
   const categoryParam = searchParams.get('category')
@@ -112,7 +112,7 @@ export function EmailSidebar() {
       console.log("Creating todo from email:", email?.subject)
       const newTask = await convertMailToTask(email?.gmailAccount, email?.messageId)
       console.log(`Email ${email?.messageId} converted to task successfully`)
-      setTasks([...tasks, newTask])
+      await fetchTasks(); // Refetch tasks from backend to update kanban
 
       toast.success("Todo created successfully!", {
         description: `Created todo from "${email?.subject}"`

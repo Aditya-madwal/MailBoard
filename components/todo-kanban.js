@@ -49,13 +49,9 @@ export function TodoKanban() {
   const [selectedTodo, setSelectedTodo] = useState(null);
   const [addTaskOpen, setAddTaskOpen] = useState(false);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
-  const { tasks, setTasks } = useMail();
+  const { tasks, setTasks, fetchTasks } = useMail();
 
-  const fetchTasks = async () => {
-    const fetchedTasks = await getAllTasks();
-    setTasks(fetchedTasks);
-  };
-
+  // Remove local fetchTasks, use context fetchTasks
   useEffect(() => {
     fetchTasks();
   }, []);

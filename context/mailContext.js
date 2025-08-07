@@ -1,6 +1,7 @@
 "use client"
 
 import { createContext, useContext, useState } from "react"
+import { getAllTasks } from "@/services/api/todo"
 
 const MailContext = createContext()
 
@@ -21,6 +22,12 @@ export const MailProvider = ({ children }) => {
 
     const [sample, setSample] = useState("hello")
 
+    // Fetch tasks from backend and update state
+    const fetchTasks = async () => {
+        const fetchedTasks = await getAllTasks();
+        setTasks(fetchedTasks);
+    }
+
     return (
         <MailContext.Provider
             value={{
@@ -37,6 +44,7 @@ export const MailProvider = ({ children }) => {
 
                 tasks,
                 setTasks,
+                fetchTasks,
 
                 labels,
                 setLabels,

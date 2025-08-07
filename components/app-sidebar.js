@@ -40,6 +40,7 @@ import { logoutUser } from "@/services/api/auth/index"
 import { useMail } from "@/context/mailContext"
 import { SettingsModal } from "@/components/settings-modal"
 import { toast } from "react-hot-toast"
+import { Skeleton } from "@/components/ui/skeleton"
 
 export function AppSidebar() {
   const [connectDialogOpen, setConnectDialogOpen] = useState(false)
@@ -48,6 +49,7 @@ export function AppSidebar() {
   const [categoryOnboardingOpen, setCategoryOnboardingOpen] = useState(false)
   const [categoriesLoaded, setCategoriesLoaded] = useState(false)
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false)
+  const [accountsLoaded, setAccountsLoaded] = useState(false)
 
   const { mailAccounts, setMailAccounts, categories, setCategories, emails, labels } = useMail()
   const router = useRouter()
@@ -91,6 +93,8 @@ export function AppSidebar() {
         setMailAccounts(accounts)
       } catch (error) {
         console.error("Error fetching email accounts:", error)
+      } finally {
+        setAccountsLoaded(true)
       }
     }
 
@@ -187,10 +191,24 @@ export function AppSidebar() {
             </div>
             <SidebarGroupContent>
               <SidebarMenu>
-                {mailAccounts.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center p-4 text-muted-foreground">
+                {/* Loading spinner for accounts */}
+                {!accountsLoaded ? (
+                  <div className="flex flex-col gap-2 p-4">
+                    <Skeleton className="h-8 w-48 mb-2" />
+                    <Skeleton className="h-8 w-40" />
+                  </div>
+                ) : mailAccounts.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center p-2 text-muted-foreground gap-2">
                     <p className="text-sm font-medium">No accounts connected</p>
                     <p className="text-xs opacity-75 text-center">Connect your email accounts to get started</p>
+                    <Button
+                      variant="default"
+                      size="default"
+                      onClick={() => setConnectDialogOpen(true)}
+                      className="mt-2 shadow-lg bg-green-300 text-green-900 hover:border-2 hover:bg-black hover:border-green-600 hover:text-green-300 hover:shadow-xl transition-all duration-300"
+                    >
+                      <Plus className="h-4 w-4 mr-2" /> Add Account
+                    </Button>
                   </div>
                 ) : mailAccounts.map((account) => (
                   <SidebarMenuItem key={account.id}>
@@ -222,20 +240,18 @@ export function AppSidebar() {
             </div>
             <SidebarGroupContent>
               <SidebarMenu>
-                {!categoriesLoaded && (
-                  <div className="flex flex-col items-center justify-center p-4 text-muted-foreground">
-                    <p className="text-sm font-medium">Loading categories...</p>
+                {/* Loading spinner for categories */}
+                {!categoriesLoaded ? (
+                  <div className="flex flex-col gap-2 p-4">
+                    <Skeleton className="h-6 w-32 mb-2" />
+                    <Skeleton className="h-6 w-24" />
                   </div>
-                )}
-
-                {categoriesLoaded && validCategories.length === 0 && (
+                ) : categoriesLoaded && validCategories.length === 0 ? (
                   <div className="flex flex-col items-center justify-center p-4 text-muted-foreground">
                     <p className="text-sm font-medium">No categories added</p>
                     <p className="text-xs opacity-75 text-center">Add categories to get started</p>
                   </div>
-                )}
-
-                {validCategories.map(category => (
+                ) : validCategories.map(category => (
                   <SidebarMenuItem key={category._id || category.id}>
                     <SidebarMenuButton
                       className={`justify-start cursor-pointer transition-colors ${activeCategory === category.name ? 'bg-accent text-accent-foreground' : 'hover:bg-accent/50'}`}
