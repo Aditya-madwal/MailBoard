@@ -304,7 +304,7 @@ export default function LandingPage() {
           </div>
 
           <div className="border-t mt-8 pt-8 text-center text-sm text-muted-foreground">
-            <p>&copy; 2024 MailBoard</p>
+            <p>&copy; 2025 MailBoard</p>
           </div>
         </div>
       </footer>

@@ -81,9 +81,3 @@ npm run dev
 - [ ] Multiple Emails support
 - [ ] Auto resource extraction from emails
 - [ ] AI-generated emails
-
----
-
-## 📄 License
-
-This project is open-source and available under the **MIT License**.
