@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs'
 import dbConnect from '../../../../lib/db'
 import User from '../../../../models/User'
 import { generateToken } from '../../../../lib/jwt'
-import { validateEmail, checkRateLimit } from '../../../../lib/validation'
+import { validateEmail } from '../../../../lib/validation'
 
 export async function POST(request) {
   try {
